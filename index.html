@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог проектов</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+    <aside class="sidebar">
+        <div class="sidebar-inner">
+            <div class="search-block">
+                <label class="visually-hidden" for="searchInput">Поиск по имени проекта</label>
+                <input
+                    id="searchInput"
+                    class="search-input"
+                    type="search"
+                    placeholder="Поиск"
+                    autocomplete="off"
+                >
+            </div>
+            <div class="filters-section">
+                <div class="filters-group">
+                    <div class="filters-group-buttons">
+                        <button class="filter-button" data-filter-type="type" data-value="МП1">
+                            МП1
+                        </button>
+                        <button class="filter-button" data-filter-type="type" data-value="МП2">
+                            МП2
+                        </button>
+                    </div>
+                </div>
+                <div class="years-block">
+                    <div class="years-list">
+                        <button class="filter-button" data-filter-type="year" data-value="2024–2025">
+                            2024–2025
+                        </button>
+                        <button class="filter-button" data-filter-type="year" data-value="2025–2026">
+                            2025–2026
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <main class="main">
+        <section class="cards-section">
+            <div class="cards-grid" id="cardsContainer">
+            </div>
+        </section>
+    </main>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

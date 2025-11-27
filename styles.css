@@ -1,0 +1,261 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #ffffff;
+    color: #213e89;
+}
+
+button {
+    font: inherit;
+}
+
+.page {
+    display: flex;
+    height: 100vh;
+    background-color: #ffffff;
+}
+
+/* Sidebar */
+
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #85ac1f 0%, #213e89 100%);
+    padding: 24px 20px;
+    border-right: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 24px;
+}
+
+.search-block {
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* Filters */
+
+.filters-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+}
+
+.filters-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filters-group-label {
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.filters-group-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.filter-button {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background-color: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease,
+        transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.filter-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.filter-button.active {
+    background-color: #ffffff;
+    color: #213e89;
+    border-color: #ffffff;
+}
+
+/* Years block */
+
+.years-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.12);
+    padding: 18px 16px;
+    gap: 16px;
+}
+
+.years-header {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.years-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.years-list .filter-button {
+    width: 100%;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Main area + cards */
+
+.main {
+    flex: 1;
+    display: flex;
+    padding: 0;
+    background-color: #ffffff;
+}
+
+.cards-section {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+    background-color: #ffffff;
+}
+
+.cards-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cards-section::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.cards-section::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: linear-gradient(180deg, #85ac1f 0%, #213e89 100%);
+}
+
+/* Grid of cards */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    align-content: flex-start;
+}
+
+.project-card {
+    background-color: #ffffff;
+    border-radius: 26px;
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 1px solid rgba(33, 62, 137, 0.18);
+    box-shadow: 0 4px 10px rgba(33, 62, 137, 0.08);
+}
+
+.project-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.project-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #213e89;
+}
+
+.project-type-badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #213e89 0%, #85ac1f 100%);
+    color: #ffffff;
+}
+
+.project-meta {
+    font-size: 13px;
+    color: rgba(33, 62, 137, 0.8);
+}
+
+.project-description {
+    margin-top: auto;
+    font-size: 13px;
+    color: rgba(33, 62, 137, 0.85);
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 240px;
+        padding: 16px;
+    }
+
+    .cards-section {
+        padding: 16px 20px;
+    }
+}
+
+@media (max-width: 720px) {
+    .page {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+}
