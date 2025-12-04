@@ -259,3 +259,242 @@ button {
         border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     }
 }
+
+/* ---- Project details modal ---- */
+
+.project-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.35);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+}
+
+.project-modal-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.project-modal {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+    max-width: 960px;
+    width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.project-modal__content {
+    padding: 24px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: hidden;
+}
+
+.project-modal__title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #213e89;
+    margin: 0;
+    margin-right: 32px;
+}
+
+.project-modal__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr);
+    gap: 20px;
+}
+
+.project-modal__main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.project-modal__image-wrapper {
+    border-radius: 18px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #213e89 0%, #85ac1f 100%);
+    min-height: 180px;
+}
+
+.project-modal__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.project-modal__description {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(33, 62, 137, 0.9);
+}
+
+.project-modal__pdf-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid #213e89;
+    text-decoration: none;
+    font-size: 14px;
+    color: #213e89;
+    margin-top: 4px;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.project-modal__pdf-link:hover {
+    background: linear-gradient(135deg, #213e89 0%, #85ac1f 100%);
+    color: #ffffff;
+    border-color: transparent;
+    transform: translateY(-1px);
+}
+
+.project-modal__team {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 18px;
+    background-color: rgba(33, 62, 137, 0.04);
+    padding: 12px 12px 10px;
+}
+
+.project-modal__team-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #213e89;
+}
+
+.project-modal__students-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.project-modal__student {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.project-modal__student-photo-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #213e89 0%, #85ac1f 100%);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.project-modal__student-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.project-modal__student-placeholder {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.project-modal__student-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.project-modal__student-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #213e89;
+}
+
+.project-modal__student-role {
+    font-size: 13px;
+    color: rgba(33, 62, 137, 0.85);
+}
+
+.project-modal__student--empty {
+    font-size: 13px;
+    color: rgba(33, 62, 137, 0.7);
+}
+
+/* Close button */
+
+.project-modal__close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: none;
+    background-color: rgba(33, 62, 137, 0.06);
+    color: #213e89;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.project-modal__close:hover {
+    background-color: rgba(33, 62, 137, 0.16);
+    transform: translateY(-1px);
+}
+
+/* Adaptive modal window */
+
+@media (max-width: 900px) {
+    .project-modal-backdrop {
+        padding: 16px;
+    }
+
+    .project-modal__layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .project-modal__students-list {
+        max-height: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .project-modal-backdrop {
+        padding: 12px;
+    }
+
+    .project-modal__content {
+        padding: 16px 16px 14px;
+    }
+}

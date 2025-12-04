@@ -51,6 +51,49 @@
         </section>
     </main>
 </div>
+<div class="project-modal-backdrop" id="projectModal" aria-hidden="true">
+    <div class="project-modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+        <button class="project-modal__close" type="button" aria-label="Закрыть окно">
+            ×
+        </button>
+
+        <div class="project-modal__content">
+            <h2 class="project-modal__title" id="projectModalTitle"></h2>
+
+            <div class="project-modal__layout">
+                <div class="project-modal__main">
+                    <div class="project-modal__image-wrapper">
+                        <img
+                            id="projectModalImage"
+                            class="project-modal__image"
+                            src=""
+                            alt=""
+                        >
+                    </div>
+
+                    <p id="projectModalDescription" class="project-modal__description"></p>
+
+                    <a
+                        id="projectModalPdf"
+                        class="project-modal__pdf-link"
+                        href="#"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        Открыть PDF проекта
+                    </a>
+                </div>
+
+                <aside class="project-modal__team">
+                    <h3 class="project-modal__team-title">Команда</h3>
+                    <ul id="projectModalStudents" class="project-modal__students-list">
+
+                    </ul>
+                </aside>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="script.js"></script>
 </body>
 </html>
