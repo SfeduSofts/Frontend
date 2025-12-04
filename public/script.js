@@ -97,7 +97,7 @@ const mockProjectDetails = {
     fullDescription:
       "Подробное описание проекта VR-лаборатория для школьников. " +
       "Виртуальные стенды, безопасные эксперименты и сценарии уроков для учителей.",
-    pdfUrl: "pdf/vr-lab.pdf",
+    pdfUrl: "pdf/vr-lab.pdf", // посмотреть igsx
     students: [
       {
         name: "Иван Иванов",
