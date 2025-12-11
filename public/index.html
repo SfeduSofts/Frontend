@@ -1,99 +1,156 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Каталог проектов</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-<div class="page">
-    <aside class="sidebar">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <aside class="sidebar">
         <div class="sidebar-inner">
-            <div class="search-block">
-                <label class="visually-hidden" for="searchInput">Поиск по имени проекта</label>
-                <input
-                    id="searchInput"
-                    class="search-input"
-                    type="search"
-                    placeholder="Поиск"
-                    autocomplete="off"
+          <div class="search-block">
+            <label class="visually-hidden" for="searchInput"
+              >Поиск по имени проекта</label
+            >
+            <input
+              id="searchInput"
+              class="search-input"
+              type="search"
+              placeholder="Поиск"
+              autocomplete="off"
+            />
+          </div>
+          <div class="filters-section">
+            <div class="filters-group">
+              <div class="filters-group-buttons">
+                <button
+                  class="filter-button"
+                  data-filter-type="type"
+                  data-value="МП1"
                 >
+                  МП1
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="type"
+                  data-value="МП2"
+                >
+                  МП2
+                </button>
+              </div>
             </div>
-            <div class="filters-section">
-                <div class="filters-group">
-                    <div class="filters-group-buttons">
-                        <button class="filter-button" data-filter-type="type" data-value="МП1">
-                            МП1
-                        </button>
-                        <button class="filter-button" data-filter-type="type" data-value="МП2">
-                            МП2
-                        </button>
-                    </div>
-                </div>
-                <div class="years-block">
-                    <div class="years-list">
-                        <button class="filter-button" data-filter-type="year" data-value="2024–2025">
-                            2024–2025
-                        </button>
-                        <button class="filter-button" data-filter-type="year" data-value="2025–2026">
-                            2025–2026
-                        </button>
-                    </div>
-                </div>
+            <div class="years-block">
+              <div class="years-list">
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2024–2025"
+                >
+                  2024–2025
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2025–2026"
+                >
+                  2025–2026
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2026–2027"
+                >
+                  2026–2027
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2027–2028"
+                >
+                  2027–2028
+                </button>
+              </div>
             </div>
+            <button
+              class="reset-filters-button"
+              id="resetFiltersButton"
+              type="button"
+            >
+              Сбросить фильтры
+            </button>
+          </div>
         </div>
-    </aside>
-    <main class="main">
+      </aside>
+      <main class="main">
         <section class="cards-section">
-            <div class="cards-grid" id="cardsContainer">
-            </div>
+          <div class="cards-grid" id="cardsContainer"></div>
         </section>
-    </main>
-</div>
-<div class="project-modal-backdrop" id="projectModal" aria-hidden="true">
-    <div class="project-modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
-        <button class="project-modal__close" type="button" aria-label="Закрыть окно">
-            ×
+      </main>
+    </div>
+    <div class="project-modal-backdrop" id="projectModal" aria-hidden="true">
+      <div
+        class="project-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="projectModalTitle"
+      >
+        <button
+          class="project-modal__close"
+          type="button"
+          aria-label="Закрыть окно"
+        >
+          ×
         </button>
 
         <div class="project-modal__content">
-            <h2 class="project-modal__title" id="projectModalTitle"></h2>
+          <h2 class="project-modal__title" id="projectModalTitle"></h2>
 
-            <div class="project-modal__layout">
-                <div class="project-modal__main">
-                    <div class="project-modal__image-wrapper">
-                        <img
-                            id="projectModalImage"
-                            class="project-modal__image"
-                            src=""
-                            alt=""
-                        >
-                    </div>
+          <div class="project-modal__layout">
+            <div class="project-modal__main">
+              <div class="project-modal__image-wrapper">
+                <img
+                  id="projectModalImage"
+                  class="project-modal__image"
+                  src=""
+                  alt=""
+                />
+              </div>
 
-                    <p id="projectModalDescription" class="project-modal__description"></p>
+              <p
+                id="projectModalDescription"
+                class="project-modal__description"
+              ></p>
 
-                    <a
-                        id="projectModalPdf"
-                        class="project-modal__pdf-link"
-                        href="#"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Открыть PDF проекта
-                    </a>
-                </div>
-
-                <aside class="project-modal__team">
-                    <h3 class="project-modal__team-title">Команда</h3>
-                    <ul id="projectModalStudents" class="project-modal__students-list">
-
-                    </ul>
-                </aside>
+              <a
+                id="projectModalPdf"
+                class="project-modal__pdf-link"
+                href="#"
+                target="_blank"
+                rel="noopener"
+              >
+                Открыть PDF проекта
+              </a>
             </div>
+
+            <aside class="project-modal__team">
+              <h3 class="project-modal__team-title">
+                Команда
+                <span
+                  id="projectModalTeamName"
+                  class="project-modal__team-name"
+                ></span>
+              </h3>
+              <ul
+                id="projectModalStudents"
+                class="project-modal__students-list"
+              ></ul>
+            </aside>
+          </div>
         </div>
+      </div>
     </div>
-</div>
-<script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>

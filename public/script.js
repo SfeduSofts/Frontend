@@ -1,6 +1,8 @@
 let projects = [];
 let projectsLoaded = false;
 
+const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
+
 /**
  * Simulation of loading a list of projects from the backend.
  *
@@ -16,57 +18,101 @@ function loadProjects() {
       id: 1,
       name: "VR-лаборатория для школьников",
       type: "МП1",
-      years: "2024–2025",
+      year: 2025,
       description: "Обучающая среда с интерактивными экспериментами по физике.",
+      mentor: "доц. Петров П.П.",
     },
     {
       id: 2,
       name: "Сервис мониторинга учебной нагрузки",
       type: "МП2",
-      years: "2024–2025",
+      year: 2025,
       description: "Веб-панель для студентов и преподавателей с аналитикой.",
+      mentor: "ст. преп. Иванова И.И.",
     },
     {
       id: 3,
       name: "Мобильное приложение «Кампус+»",
       type: "МП1",
-      years: "2025–2026",
+      year: 2026,
       description: "Навигация по корпусам, расписание и уведомления.",
+      mentor: "проф. Сидоров С.С.",
     },
     {
       id: 4,
       name: "Платформа для проектных команд",
       type: "МП2",
-      years: "2025–2026",
+      year: 2026,
       description: "Таск-менеджер, доски задач и интеграция с календарями.",
+      mentor: "проф. Сидоров С.С.",
     },
     {
       id: 5,
       name: "Геймифицированный курс по алгоритмам",
       type: "МП1",
-      years: "2024–2025",
+      year: 2025,
       description: "Квест с уровнями сложности и системой достижений.",
+      mentor: "ст. преп. Иванова И.И.",
     },
     {
       id: 6,
       name: "Система бронирования аудиторий",
       type: "МП2",
-      years: "2024–2025",
+      year: 2025,
       description: "Интерфейс для брони помещений и оборудования.",
+      mentor: "доц. Петров П.П.",
     },
     {
       id: 7,
       name: "VR-тур по музею университета",
       type: "МП1",
-      years: "2025–2026",
+      year: 2026,
       description: "Интерактивные экспозиции с комментариями кураторов.",
+      mentor: "проф. Сидоров С.С.",
     },
     {
       id: 8,
       name: "Аналитика посещаемости мероприятий",
       type: "МП2",
-      years: "2025–2026",
+      year: 2026,
       description: "Сбор данных по событиям, отчёты и дашборды.",
+      mentor: "ст. преп. Иванова И.И.",
+    },
+    {
+      id: 9,
+      name: "Онлайн-лаборатории по программированию",
+      type: "МП1",
+      year: 2027,
+      description:
+        "Веб-среда для выполнения и автопроверки лабораторных работ по программированию.",
+      mentor: "доц. Петров П.П.",
+    },
+    {
+      id: 10,
+      name: "Цифровой помощник первокурсника",
+      type: "МП2",
+      year: 2027,
+      description:
+        "Чат-бот и панель с расписанием, дедлайнами и FAQ для адаптации первокурсников.",
+      mentor: "проф. Сидоров С.С.",
+    },
+    {
+      id: 11,
+      name: "AR-гид по кампусу",
+      type: "МП1",
+      year: 2028,
+      description:
+        "Мобильное AR-приложение для навигации по кампусу и просмотра информации о локациях.",
+      mentor: "ст. преп. Иванова И.И.",
+    },
+    {
+      id: 12,
+      name: "Система адаптивного тестирования по математике",
+      type: "МП2",
+      year: 2028,
+      description:
+        "Платформа, которая подстраивает сложность задач под уровень студента в режиме реального времени.",
+      mentor: "доц. Петров П.П.",
     },
   ];
 
@@ -76,6 +122,7 @@ function loadProjects() {
 const cardsContainer = document.getElementById("cardsContainer");
 const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-button");
+const resetFiltersButton = document.getElementById("resetFiltersButton");
 
 const modalBackdrop = document.getElementById("projectModal");
 const modalTitle = document.getElementById("projectModalTitle");
@@ -84,6 +131,7 @@ const modalDescription = document.getElementById("projectModalDescription");
 const modalPdfLink = document.getElementById("projectModalPdf");
 const modalStudentsList = document.getElementById("projectModalStudents");
 const modalCloseButton = document.querySelector(".project-modal__close");
+const modalTeamName = document.getElementById("projectModalTeamName");
 
 const state = {
   search: "",
@@ -218,6 +266,82 @@ const mockProjectDetails = {
       },
     ],
   },
+  9: {
+    imageUrl: "images/projects/online-labs.jpg",
+    fullDescription:
+      "Онлайн-лаборатории по программированию: поддержка нескольких языков, " +
+      "автоматическая проверка тестов, подсказки и статистика выполнения заданий.",
+    pdfUrl: "pdf/online-labs.pdf",
+    students: [
+      {
+        name: "Дмитрий Соколов",
+        role: "Back-end разработчик",
+        photoUrl: "images/students/sokolov.jpg",
+      },
+      {
+        name: "Екатерина Новикова",
+        role: "DevOps-инженер",
+        photoUrl: "images/students/novikova.jpg",
+      },
+    ],
+  },
+  10: {
+    imageUrl: "images/projects/freshman-assistant.jpg",
+    fullDescription:
+      "Цифровой помощник первокурсника: чат-бот, который подсказывает расписание, " +
+      "дедлайны, помогает ориентироваться по корпусам и отвечает на типичные вопросы.",
+    pdfUrl: "pdf/freshman-assistant.pdf",
+    students: [
+      {
+        name: "Илья Захаров",
+        role: "ML/Chat-бот разработчик",
+        photoUrl: "images/students/zaharov.jpg",
+      },
+      {
+        name: "Полина Сергеева",
+        role: "UX/UI дизайнер",
+        photoUrl: "images/students/sergeeva.jpg",
+      },
+    ],
+  },
+  11: {
+    imageUrl: "images/projects/ar-campus.jpg",
+    fullDescription:
+      "AR-гид по кампусу: мобильное приложение с дополненной реальностью для " +
+      "поиска аудиторий, кабинетов и сервисов университета с подсказками на экране.",
+    pdfUrl: "pdf/ar-campus.pdf",
+    students: [
+      {
+        name: "Никита Воронов",
+        role: "Разработчик мобильного приложения",
+        photoUrl: "images/students/voronov.jpg",
+      },
+      {
+        name: "Алина Романова",
+        role: "3D/AR-дизайнер",
+        photoUrl: "images/students/romanova.jpg",
+      },
+    ],
+  },
+  12: {
+    imageUrl: "images/projects/adaptive-math-testing.jpg",
+    fullDescription:
+      "Система адаптивного тестирования по математике: динамический подбор задач, " +
+      "анализ ошибок студентов и рекомендации по темам для повторения.",
+    pdfUrl: "pdf/adaptive-math-testing.pdf",
+    students: [
+      {
+        name: "Сергей Назаров",
+        role: "Разработчик алгоритмов тестирования",
+        photoUrl: "images/students/nazarov.jpg",
+      },
+      {
+        name: "Ольга Фролова",
+        role: "Методист по математике",
+        photoUrl: "images/students/frolova.jpg",
+      },
+    ],
+  },
 };
 
 /**
@@ -240,6 +364,46 @@ function loadProjectDetails(projectId) {
   return Promise.resolve(detailed);
 }
 
+function getDisplayYears(project) {
+  const endYear = project.year;
+
+  if (!endYear) return "";
+
+  if (project.type === "МП2") {
+    const startYear = endYear - 1;
+    return `${startYear}–${endYear}`;
+  }
+
+  return String(endYear);
+}
+
+function parseYearRangeLabel(label) {
+  if (label == null) return null;
+
+  const raw = String(label).trim();
+  if (!raw) return null;
+
+  const parts = raw
+    .split(/[-–]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (parts.length === 1) {
+    const y = Number(parts[0]);
+    if (!Number.isFinite(y)) return null;
+    return { start: y, end: y };
+  }
+
+  if (parts.length >= 2) {
+    const start = Number(parts[0]);
+    const end = Number(parts[1]);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+    return { start, end };
+  }
+
+  return null;
+}
+
 function renderProjects() {
   if (!projectsLoaded) {
     cardsContainer.innerHTML =
@@ -256,7 +420,32 @@ function renderProjects() {
 
   const filtered = projects.filter((project) => {
     const matchType = state.types.size === 0 || state.types.has(project.type);
-    const matchYear = state.years.size === 0 || state.years.has(project.years);
+
+    const matchYear =
+      state.years.size === 0 ||
+      Array.from(state.years).some((label) => {
+        const range = parseYearRangeLabel(label);
+        if (!range) return false;
+
+        const y = project.year;
+        if (!Number.isFinite(y)) return false;
+
+        if (project.type === "МП1") {
+          // МП1: год просто должен лежать в диапазоне
+          return y >= range.start && y <= range.end;
+        }
+
+        if (project.type === "МП2") {
+          // МП2: диапазон проекта [y-1, y] должен совпасть с фильтром
+          const startY = y - 1;
+          const endY = y;
+          return startY === range.start && endY === range.end;
+        }
+
+        // На всякий случай: для других типов ведём себя как для МП1
+        return y >= range.start && y <= range.end;
+      });
+
     const matchSearch =
       normalizedSearch.length === 0 ||
       project.name.toLowerCase().includes(normalizedSearch);
@@ -276,18 +465,30 @@ function renderProjects() {
   }
 
   const html = filtered
-    .map(
-      (project) => `
-        <article class="project-card" data-project-id="${project.id}">
+    .map((project) => {
+      const mentorHtml = project.mentor
+        ? '<div class="project-meta project-mentor">Наставник: ' +
+          project.mentor +
+          "</div>"
+        : "";
+
+      return `
+        <article 
+          class="project-card" 
+          data-project-id="${project.id}" 
+          data-project-type="${project.type}"
+        >
             <div class="project-card-header">
                 <h2 class="project-title">${project.name}</h2>
-                <span class="project-type-badge">${project.type}</span>
             </div>
-            <div class="project-meta">Годы реализации: ${project.years}</div>
+            <div class="project-meta">
+              Годы реализации: ${getDisplayYears(project)}
+            </div>
+            ${mentorHtml}
             <p class="project-description">${project.description}</p>
         </article>
-    `
-    )
+    `;
+    })
     .join("");
 
   cardsContainer.innerHTML = html;
@@ -310,9 +511,9 @@ function attachCardClickHandlers() {
 
 function toggleFilter(button) {
   const filterType = button.dataset.filterType;
-  const value = button.dataset.value;
 
   if (filterType === "type") {
+    const value = button.dataset.value;
     if (state.types.has(value)) {
       state.types.delete(value);
       button.classList.remove("active");
@@ -323,14 +524,30 @@ function toggleFilter(button) {
   }
 
   if (filterType === "year") {
-    if (state.years.has(value)) {
-      state.years.delete(value);
+    const raw = button.dataset.value; // например "2024–2025"
+
+    if (state.years.has(raw)) {
+      state.years.delete(raw);
       button.classList.remove("active");
     } else {
-      state.years.add(value);
+      state.years.add(raw);
       button.classList.add("active");
     }
   }
+
+  renderProjects();
+}
+
+function resetFilters() {
+  state.search = "";
+  state.types.clear();
+  state.years.clear();
+
+  searchInput.value = "";
+
+  filterButtons.forEach((button) => {
+    button.classList.remove("active");
+  });
 
   renderProjects();
 }
@@ -342,13 +559,17 @@ function openProjectModal(projectId) {
 
       modalTitle.textContent = project.name || "Проект";
 
-      if (project.imageUrl) {
-        modalImage.src = project.imageUrl;
-        modalImage.alt = project.name || "Изображение проекта";
-      } else {
-        modalImage.src = "";
-        modalImage.alt = "";
+      if (modalTeamName) {
+        if (project.teamName) {
+          modalTeamName.textContent = `«${project.teamName}»`;
+        } else {
+          modalTeamName.textContent = "";
+        }
       }
+
+      const imageUrl = project.imageUrl || DEFAULT_PROJECT_IMAGE_URL;
+      modalImage.src = imageUrl;
+      modalImage.alt = project.name || "Изображение проекта";
 
       modalDescription.textContent =
         project.fullDescription || project.description || "";
@@ -434,6 +655,10 @@ function init() {
     state.search = event.target.value;
     renderProjects();
   });
+
+  if (resetFiltersButton) {
+    resetFiltersButton.addEventListener("click", resetFilters);
+  }
 
   loadProjects()
     .then((loadedProjects) => {
