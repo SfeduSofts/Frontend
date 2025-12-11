@@ -18,7 +18,7 @@ function loadProjects() {
       id: 1,
       name: "VR-лаборатория для школьников",
       type: "МП1",
-      year: 2025,
+      year: 2024,
       description: "Обучающая среда с интерактивными экспериментами по физике.",
       mentor: "доц. Петров П.П.",
     },
@@ -26,7 +26,7 @@ function loadProjects() {
       id: 2,
       name: "Сервис мониторинга учебной нагрузки",
       type: "МП2",
-      year: 2025,
+      year: 2024,
       description: "Веб-панель для студентов и преподавателей с аналитикой.",
       mentor: "ст. преп. Иванова И.И.",
     },
@@ -34,7 +34,7 @@ function loadProjects() {
       id: 3,
       name: "Мобильное приложение «Кампус+»",
       type: "МП1",
-      year: 2026,
+      year: 2025,
       description: "Навигация по корпусам, расписание и уведомления.",
       mentor: "проф. Сидоров С.С.",
     },
@@ -42,7 +42,7 @@ function loadProjects() {
       id: 4,
       name: "Платформа для проектных команд",
       type: "МП2",
-      year: 2026,
+      year: 2025,
       description: "Таск-менеджер, доски задач и интеграция с календарями.",
       mentor: "проф. Сидоров С.С.",
     },
@@ -50,7 +50,7 @@ function loadProjects() {
       id: 5,
       name: "Геймифицированный курс по алгоритмам",
       type: "МП1",
-      year: 2025,
+      year: 2024,
       description: "Квест с уровнями сложности и системой достижений.",
       mentor: "ст. преп. Иванова И.И.",
     },
@@ -58,7 +58,7 @@ function loadProjects() {
       id: 6,
       name: "Система бронирования аудиторий",
       type: "МП2",
-      year: 2025,
+      year: 2024,
       description: "Интерфейс для брони помещений и оборудования.",
       mentor: "доц. Петров П.П.",
     },
@@ -66,7 +66,7 @@ function loadProjects() {
       id: 7,
       name: "VR-тур по музею университета",
       type: "МП1",
-      year: 2026,
+      year: 2025,
       description: "Интерактивные экспозиции с комментариями кураторов.",
       mentor: "проф. Сидоров С.С.",
     },
@@ -74,7 +74,7 @@ function loadProjects() {
       id: 8,
       name: "Аналитика посещаемости мероприятий",
       type: "МП2",
-      year: 2026,
+      year: 2025,
       description: "Сбор данных по событиям, отчёты и дашборды.",
       mentor: "ст. преп. Иванова И.И.",
     },
@@ -82,7 +82,7 @@ function loadProjects() {
       id: 9,
       name: "Онлайн-лаборатории по программированию",
       type: "МП1",
-      year: 2027,
+      year: 2026,
       description:
         "Веб-среда для выполнения и автопроверки лабораторных работ по программированию.",
       mentor: "доц. Петров П.П.",
@@ -91,7 +91,7 @@ function loadProjects() {
       id: 10,
       name: "Цифровой помощник первокурсника",
       type: "МП2",
-      year: 2027,
+      year: 2026,
       description:
         "Чат-бот и панель с расписанием, дедлайнами и FAQ для адаптации первокурсников.",
       mentor: "проф. Сидоров С.С.",
@@ -100,7 +100,7 @@ function loadProjects() {
       id: 11,
       name: "AR-гид по кампусу",
       type: "МП1",
-      year: 2028,
+      year: 2027,
       description:
         "Мобильное AR-приложение для навигации по кампусу и просмотра информации о локациях.",
       mentor: "ст. преп. Иванова И.И.",
@@ -109,7 +109,7 @@ function loadProjects() {
       id: 12,
       name: "Система адаптивного тестирования по математике",
       type: "МП2",
-      year: 2028,
+      year: 2027,
       description:
         "Платформа, которая подстраивает сложность задач под уровень студента в режиме реального времени.",
       mentor: "доц. Петров П.П.",
@@ -142,6 +142,7 @@ const state = {
 const mockProjectDetails = {
   1: {
     imageUrl: "images/projects/vr-lab.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Подробное описание проекта VR-лаборатория для школьников. " +
       "Виртуальные стенды, безопасные эксперименты и сценарии уроков для учителей.",
@@ -161,6 +162,7 @@ const mockProjectDetails = {
   },
   2: {
     imageUrl: "images/projects/load-monitoring.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Сервис мониторинга учебной нагрузки: сбор расписаний, визуализация " +
       "нагрузки по неделям, уведомления о перегрузках и отчёты для кураторов.",
@@ -180,6 +182,7 @@ const mockProjectDetails = {
   },
   3: {
     imageUrl: "images/projects/campus-plus.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Мобильное приложение «Кампус+» объединяет расписание, навигацию по корпусам, " +
       "пуш-уведомления и личный кабинет студента.",
@@ -199,6 +202,7 @@ const mockProjectDetails = {
   },
   4: {
     imageUrl: "images/projects/team-platform.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Платформа для проектных команд: доски задач, трекинг статусов, интеграция с календарями и чат.",
     pdfUrl: "pdf/team-platform.pdf",
@@ -212,6 +216,7 @@ const mockProjectDetails = {
   },
   5: {
     imageUrl: "images/projects/algorithms-game.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Геймифицированный курс по алгоритмам: уровни сложности, система достижений, " +
       "лидерборды и внутриигровые задания.",
@@ -226,6 +231,7 @@ const mockProjectDetails = {
   },
   6: {
     imageUrl: "images/projects/room-booking.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Система бронирования аудиторий: поиск свободных помещений, " +
       "бронь по времени и типу оборудования, отчёты по использованию.",
@@ -240,6 +246,7 @@ const mockProjectDetails = {
   },
   7: {
     imageUrl: "images/projects/vr-museum.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "VR-тур по музею университета: интерактивные экспозиции, голосовые комментарии, " +
       "режим экскурсии и свободного исследования.",
@@ -254,6 +261,7 @@ const mockProjectDetails = {
   },
   8: {
     imageUrl: "images/projects/events-analytics.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Аналитика посещаемости мероприятий: сбор данных с регистраций, " +
       "дашборды по посещаемости и вовлечённости студентов.",
@@ -268,6 +276,7 @@ const mockProjectDetails = {
   },
   9: {
     imageUrl: "images/projects/online-labs.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Онлайн-лаборатории по программированию: поддержка нескольких языков, " +
       "автоматическая проверка тестов, подсказки и статистика выполнения заданий.",
@@ -287,6 +296,7 @@ const mockProjectDetails = {
   },
   10: {
     imageUrl: "images/projects/freshman-assistant.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Цифровой помощник первокурсника: чат-бот, который подсказывает расписание, " +
       "дедлайны, помогает ориентироваться по корпусам и отвечает на типичные вопросы.",
@@ -306,6 +316,7 @@ const mockProjectDetails = {
   },
   11: {
     imageUrl: "images/projects/ar-campus.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "AR-гид по кампусу: мобильное приложение с дополненной реальностью для " +
       "поиска аудиторий, кабинетов и сервисов университета с подсказками на экране.",
@@ -325,6 +336,7 @@ const mockProjectDetails = {
   },
   12: {
     imageUrl: "images/projects/adaptive-math-testing.jpg",
+    teamName: "SfeduDoft",
     fullDescription:
       "Система адаптивного тестирования по математике: динамический подбор задач, " +
       "анализ ошибок студентов и рекомендации по темам для повторения.",
@@ -365,16 +377,16 @@ function loadProjectDetails(projectId) {
 }
 
 function getDisplayYears(project) {
-  const endYear = project.year;
+  const startYear = project.year;
 
-  if (!endYear) return "";
+  if (!startYear) return "";
 
   if (project.type === "МП2") {
-    const startYear = endYear - 1;
+    const endYear = startYear + 1;
     return `${startYear}–${endYear}`;
   }
 
-  return String(endYear);
+  return String(startYear);
 }
 
 function parseYearRangeLabel(label) {
@@ -427,23 +439,12 @@ function renderProjects() {
         const range = parseYearRangeLabel(label);
         if (!range) return false;
 
-        const y = project.year;
-        if (!Number.isFinite(y)) return false;
+        const filterStartYear = range.start;
+        const projectStartYear = project.year;
 
-        if (project.type === "МП1") {
-          // МП1: год просто должен лежать в диапазоне
-          return y >= range.start && y <= range.end;
-        }
+        if (!Number.isFinite(projectStartYear)) return false;
 
-        if (project.type === "МП2") {
-          // МП2: диапазон проекта [y-1, y] должен совпасть с фильтром
-          const startY = y - 1;
-          const endY = y;
-          return startY === range.start && endY === range.end;
-        }
-
-        // На всякий случай: для других типов ведём себя как для МП1
-        return y >= range.start && y <= range.end;
+        return projectStartYear === filterStartYear;
       });
 
     const matchSearch =
