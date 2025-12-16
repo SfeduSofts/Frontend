@@ -245,20 +245,17 @@ button {
   align-items: center;
   justify-content: center;
 
-  /* БОЛЬШЕ ТЕКСТ */
   font-size: clamp(64px, 14vw, 120px);
-  /* ТОНЬШЕ ШРИФТ */
+
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 
-  /* ОСНОВНОЙ ГРАДИЕНТ В ТЕКСТЕ */
   background: linear-gradient(135deg, #213e89 0%, #85ac1f 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
-  /* Чуть приглушаем, чтобы не перебивал контент */
   opacity: 0.2;
   filter: blur(2px);
 
