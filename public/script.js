@@ -161,7 +161,7 @@ const mockProjectDetails = {
     ],
   },
   2: {
-    imageUrl: "images/projects/load-monitoring.jpg",
+    imageUrl: "",
     teamName: "SfeduDoft",
     fullDescription:
       "Сервис мониторинга учебной нагрузки: сбор расписаний, визуализация " +
@@ -181,7 +181,7 @@ const mockProjectDetails = {
     ],
   },
   3: {
-    imageUrl: "images/projects/campus-plus.jpg",
+    imageUrl: "",
     teamName: "SfeduDoft",
     fullDescription:
       "Мобильное приложение «Кампус+» объединяет расписание, навигацию по корпусам, " +
