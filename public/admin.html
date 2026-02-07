@@ -3,8 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Каталог проектов</title>
+    <title>Админка проектов</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.css" />
   </head>
   <body>
     <div class="page">
@@ -150,7 +151,53 @@
         aria-labelledby="projectModalTitle"
       >
         <div class="project-modal__content">
-          <h2 class="project-modal__title" id="projectModalTitle"></h2>
+          <h2 class="project-modal__title" id="projectModalTitle">
+            <input
+              id="adminProjectName"
+              class="admin-input admin-title-input"
+              type="text"
+              placeholder="Название проекта"
+            />
+          </h2>
+
+          <div class="admin-field-grid">
+            <label class="admin-field">
+              <span class="admin-label">Тип</span>
+              <input
+                id="adminProjectType"
+                class="admin-input"
+                type="text"
+                placeholder="МП1 или МП2"
+              />
+            </label>
+            <label class="admin-field">
+              <span class="admin-label">Год</span>
+              <input
+                id="adminProjectYear"
+                class="admin-input"
+                type="number"
+                placeholder="2025"
+              />
+            </label>
+            <label class="admin-field">
+              <span class="admin-label">Наставник</span>
+              <input
+                id="adminProjectMentor"
+                class="admin-input"
+                type="text"
+                placeholder="ФИО"
+              />
+            </label>
+          </div>
+
+          <label class="admin-field admin-field--full">
+            <span class="admin-label">Короткое описание (карточка)</span>
+            <textarea
+              id="adminProjectShortDescription"
+              class="admin-textarea"
+              rows="2"
+            ></textarea>
+          </label>
 
           <div class="project-modal__layout">
             <div class="project-modal__main">
@@ -163,10 +210,34 @@
                 />
               </div>
 
-              <p
-                id="projectModalDescription"
-                class="project-modal__description"
-              ></p>
+              <label class="admin-field admin-field--full">
+                <span class="admin-label">Полное описание</span>
+                <textarea
+                  id="projectModalDescription"
+                  class="admin-textarea"
+                  rows="4"
+                ></textarea>
+              </label>
+
+              <label class="admin-field admin-field--full">
+                <span class="admin-label">Изображение URL</span>
+                <input
+                  id="adminProjectImageUrl"
+                  class="admin-input"
+                  type="text"
+                  placeholder="images/projects/..."
+                />
+              </label>
+
+              <label class="admin-field admin-field--full">
+                <span class="admin-label">PDF URL</span>
+                <input
+                  id="adminProjectPdfUrl"
+                  class="admin-input"
+                  type="text"
+                  placeholder="pdf/..."
+                />
+              </label>
 
               <a
                 id="projectModalPdf"
@@ -182,10 +253,12 @@
             <aside class="project-modal__team">
               <h3 class="project-modal__team-title">
                 Команды
-                <span
-                  id="projectModalTeamName"
-                  class="project-modal__team-name"
-                ></span>
+                <input
+                  id="adminProjectTeamNames"
+                  class="admin-input admin-team-input"
+                  type="text"
+                  placeholder="Команда A, Команда B"
+                />
               </h3>
               <ul
                 id="projectModalStudents"
@@ -193,10 +266,27 @@
               ></ul>
             </aside>
           </div>
+
+          <div class="admin-modal-actions">
+            <button
+              class="admin-button admin-button--save"
+              id="adminSaveButton"
+              type="button"
+            >
+              Сохранить
+            </button>
+            <button
+              class="admin-button admin-button--cancel"
+              id="adminCancelButton"
+              type="button"
+            >
+              Отмена
+            </button>
+          </div>
         </div>
       </div>
     </div>
     <script src="data-store.js"></script>
-    <script src="script.js"></script>
+    <script src="admin.js"></script>
   </body>
 </html>

@@ -2,121 +2,8 @@ let projects = [];
 let projectsLoaded = false;
 
 const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
-
-/**
- * Simulation of loading a list of projects from the backend.
- *
- *   async function loadProjects() {
- *     const res = await fetch('/api/projects');
- *     if (!res.ok) throw new Error('Failed to load projects');
- *     return await res.json();
- *   }
- */
 function loadProjects() {
-  const mockProjects = [
-    {
-      id: 1,
-      name: "VR-лаборатория для школьников",
-      type: "МП1",
-      year: 2024,
-      description: "Обучающая среда с интерактивными экспериментами по физике.",
-      mentor: "доц. Петров П.П.",
-    },
-    {
-      id: 2,
-      name: "Сервис мониторинга учебной нагрузки",
-      type: "МП2",
-      year: 2024,
-      description: "Веб-панель для студентов и преподавателей с аналитикой.",
-      mentor: "ст. преп. Иванова И.И.",
-    },
-    {
-      id: 3,
-      name: "Мобильное приложение «Кампус+»",
-      type: "МП1",
-      year: 2025,
-      description: "Навигация по корпусам, расписание и уведомления.",
-      mentor: "проф. Сидоров С.С.",
-    },
-    {
-      id: 4,
-      name: "Платформа для проектных команд",
-      type: "МП2",
-      year: 2025,
-      description: "Таск-менеджер, доски задач и интеграция с календарями.",
-      mentor: "проф. Сидоров С.С.",
-    },
-    {
-      id: 5,
-      name: "Геймифицированный курс по алгоритмам",
-      type: "МП1",
-      year: 2024,
-      description: "Квест с уровнями сложности и системой достижений.",
-      mentor: "ст. преп. Иванова И.И.",
-    },
-    {
-      id: 6,
-      name: "Система бронирования аудиторий",
-      type: "МП2",
-      year: 2024,
-      description: "Интерфейс для брони помещений и оборудования.",
-      mentor: "доц. Петров П.П.",
-    },
-    {
-      id: 7,
-      name: "VR-тур по музею университета",
-      type: "МП1",
-      year: 2025,
-      description: "Интерактивные экспозиции с комментариями кураторов.",
-      mentor: "проф. Сидоров С.С.",
-    },
-    {
-      id: 8,
-      name: "Аналитика посещаемости мероприятий",
-      type: "МП2",
-      year: 2025,
-      description: "Сбор данных по событиям, отчёты и дашборды.",
-      mentor: "ст. преп. Иванова И.И.",
-    },
-    {
-      id: 9,
-      name: "Онлайн-лаборатории по программированию",
-      type: "МП1",
-      year: 2026,
-      description:
-        "Веб-среда для выполнения и автопроверки лабораторных работ по программированию.",
-      mentor: "доц. Петров П.П.",
-    },
-    {
-      id: 10,
-      name: "Цифровой помощник первокурсника",
-      type: "МП2",
-      year: 2026,
-      description:
-        "Чат-бот и панель с расписанием, дедлайнами и FAQ для адаптации первокурсников.",
-      mentor: "проф. Сидоров С.С.",
-    },
-    {
-      id: 11,
-      name: "AR-гид по кампусу",
-      type: "МП1",
-      year: 2027,
-      description:
-        "Мобильное AR-приложение для навигации по кампусу и просмотра информации о локациях.",
-      mentor: "ст. преп. Иванова И.И.",
-    },
-    {
-      id: 12,
-      name: "Система адаптивного тестирования по математике",
-      type: "МП2",
-      year: 2027,
-      description:
-        "Платформа, которая подстраивает сложность задач под уровень студента в режиме реального времени.",
-      mentor: "доц. Петров П.П.",
-    },
-  ];
-
-  return Promise.resolve(mockProjects);
+  return DataStore.loadProjects();
 }
 
 const cardsContainer = document.getElementById("cardsContainer");
@@ -130,7 +17,6 @@ const modalImage = document.getElementById("projectModalImage");
 const modalDescription = document.getElementById("projectModalDescription");
 const modalPdfLink = document.getElementById("projectModalPdf");
 const modalStudentsList = document.getElementById("projectModalStudents");
-const modalCloseButton = document.querySelector(".project-modal__close");
 const modalTeamName = document.getElementById("projectModalTeamName");
 
 const state = {
@@ -139,247 +25,30 @@ const state = {
   years: new Set(),
 };
 
-const mockProjectDetails = {
-  1: {
-    imageUrl: "images/projects/vr-lab.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Подробное описание проекта VR-лаборатория для школьников. " +
-      "Виртуальные стенды, безопасные эксперименты и сценарии уроков для учителей.",
-    pdfUrl: "pdf/vr-lab.pdf", // посмотреть igsx
-    students: [
-      {
-        name: "Иван Иванов",
-        role: "Тимлид, разработчик VR",
-        photoUrl: "images/students/ivanov.jpg",
-      },
-      {
-        name: "Анна Петрова",
-        role: "Дизайнер интерфейса и 3D-моделей",
-        photoUrl: "images/students/petrova.jpg",
-      },
-    ],
-  },
-  2: {
-    imageUrl: "",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Сервис мониторинга учебной нагрузки: сбор расписаний, визуализация " +
-      "нагрузки по неделям, уведомления о перегрузках и отчёты для кураторов.",
-    pdfUrl: "pdf/load-monitoring.pdf",
-    students: [
-      {
-        name: "Олег Смирнов",
-        role: "Back-end разработчик",
-        photoUrl: "images/students/smirnov.jpg",
-      },
-      {
-        name: "Мария Кузнецова",
-        role: "Front-end разработчик",
-        photoUrl: "images/students/kuznetsova.jpg",
-      },
-    ],
-  },
-  3: {
-    imageUrl: "",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Мобильное приложение «Кампус+» объединяет расписание, навигацию по корпусам, " +
-      "пуш-уведомления и личный кабинет студента.",
-    pdfUrl: "pdf/campus-plus.pdf",
-    students: [
-      {
-        name: "Дмитрий Соколов",
-        role: "Android-разработчик",
-        photoUrl: "images/students/sokolov.jpg",
-      },
-      {
-        name: "Елена Иванова",
-        role: "Аналитик, UX-исследователь",
-        photoUrl: "images/students/ivanova-e.jpg",
-      },
-    ],
-  },
-  4: {
-    imageUrl: "images/projects/team-platform.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Платформа для проектных команд: доски задач, трекинг статусов, интеграция с календарями и чат.",
-    pdfUrl: "pdf/team-platform.pdf",
-    students: [
-      {
-        name: "Кирилл Волков",
-        role: "Full-stack разработчик",
-        photoUrl: "images/students/volkov.jpg",
-      },
-    ],
-  },
-  5: {
-    imageUrl: "images/projects/algorithms-game.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Геймифицированный курс по алгоритмам: уровни сложности, система достижений, " +
-      "лидерборды и внутриигровые задания.",
-    pdfUrl: "pdf/algorithms-course.pdf",
-    students: [
-      {
-        name: "Алексей Орлов",
-        role: "Разработчик игрового ядра",
-        photoUrl: "images/students/orlov.jpg",
-      },
-    ],
-  },
-  6: {
-    imageUrl: "images/projects/room-booking.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Система бронирования аудиторий: поиск свободных помещений, " +
-      "бронь по времени и типу оборудования, отчёты по использованию.",
-    pdfUrl: "pdf/room-booking.pdf",
-    students: [
-      {
-        name: "Светлана Морозова",
-        role: "Back-end разработчик",
-        photoUrl: "images/students/morozova.jpg",
-      },
-    ],
-  },
-  7: {
-    imageUrl: "images/projects/vr-museum.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "VR-тур по музею университета: интерактивные экспозиции, голосовые комментарии, " +
-      "режим экскурсии и свободного исследования.",
-    pdfUrl: "pdf/vr-museum.pdf",
-    students: [
-      {
-        name: "Павел Федоров",
-        role: "VR-разработчик",
-        photoUrl: "images/students/fedorov.jpg",
-      },
-    ],
-  },
-  8: {
-    imageUrl: "images/projects/events-analytics.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Аналитика посещаемости мероприятий: сбор данных с регистраций, " +
-      "дашборды по посещаемости и вовлечённости студентов.",
-    pdfUrl: "pdf/events-analytics.pdf",
-    students: [
-      {
-        name: "Ирина Алексеева",
-        role: "Аналитик данных",
-        photoUrl: "images/students/alekseeva.jpg",
-      },
-    ],
-  },
-  9: {
-    imageUrl: "images/projects/online-labs.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Онлайн-лаборатории по программированию: поддержка нескольких языков, " +
-      "автоматическая проверка тестов, подсказки и статистика выполнения заданий.",
-    pdfUrl: "pdf/online-labs.pdf",
-    students: [
-      {
-        name: "Дмитрий Соколов",
-        role: "Back-end разработчик",
-        photoUrl: "images/students/sokolov.jpg",
-      },
-      {
-        name: "Екатерина Новикова",
-        role: "DevOps-инженер",
-        photoUrl: "images/students/novikova.jpg",
-      },
-    ],
-  },
-  10: {
-    imageUrl: "images/projects/freshman-assistant.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Цифровой помощник первокурсника: чат-бот, который подсказывает расписание, " +
-      "дедлайны, помогает ориентироваться по корпусам и отвечает на типичные вопросы.",
-    pdfUrl: "pdf/freshman-assistant.pdf",
-    students: [
-      {
-        name: "Илья Захаров",
-        role: "ML/Chat-бот разработчик",
-        photoUrl: "images/students/zaharov.jpg",
-      },
-      {
-        name: "Полина Сергеева",
-        role: "UX/UI дизайнер",
-        photoUrl: "images/students/sergeeva.jpg",
-      },
-    ],
-  },
-  11: {
-    imageUrl: "images/projects/ar-campus.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "AR-гид по кампусу: мобильное приложение с дополненной реальностью для " +
-      "поиска аудиторий, кабинетов и сервисов университета с подсказками на экране.",
-    pdfUrl: "pdf/ar-campus.pdf",
-    students: [
-      {
-        name: "Никита Воронов",
-        role: "Разработчик мобильного приложения",
-        photoUrl: "images/students/voronov.jpg",
-      },
-      {
-        name: "Алина Романова",
-        role: "3D/AR-дизайнер",
-        photoUrl: "images/students/romanova.jpg",
-      },
-    ],
-  },
-  12: {
-    imageUrl: "images/projects/adaptive-math-testing.jpg",
-    teamName: "SfeduDoft",
-    fullDescription:
-      "Система адаптивного тестирования по математике: динамический подбор задач, " +
-      "анализ ошибок студентов и рекомендации по темам для повторения.",
-    pdfUrl: "pdf/adaptive-math-testing.pdf",
-    students: [
-      {
-        name: "Сергей Назаров",
-        role: "Разработчик алгоритмов тестирования",
-        photoUrl: "images/students/nazarov.jpg",
-      },
-      {
-        name: "Ольга Фролова",
-        role: "Методист по математике",
-        photoUrl: "images/students/frolova.jpg",
-      },
-    ],
-  },
-};
+let activeModalRequestId = 0;
 
-/**
- * Simulation of uploading project details from the backend.
- *
- *   async function loadProjectDetails(id) {
- *     const res = await fetch(`/api/projects/${id}`);
- *     if (!res.ok) throw new Error('Failed to load project');
- *     return await res.json();
- *   }
- */
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 function loadProjectDetails(projectId) {
-  const base = projects.find((p) => p.id === projectId);
+  return DataStore.loadProjectDetails(projectId);
+}
 
-  const detailed = {
-    ...base,
-    ...(mockProjectDetails[projectId] || {}),
-  };
-
-  return Promise.resolve(detailed);
+function loadTeamStudents(teamName) {
+  return DataStore.loadTeamStudents(teamName).catch(() => []);
 }
 
 function getDisplayYears(project) {
-  const startYear = project.year;
+  if (project.year == null || project.year === "") return "";
 
-  if (!startYear) return "";
+  const startYear = Number(project.year);
+
+  if (!Number.isFinite(startYear)) return "";
 
   if (project.type === "МП2") {
     const endYear = startYear + 1;
@@ -440,7 +109,9 @@ function renderProjects() {
         if (!range) return false;
 
         const filterStartYear = range.start;
-        const projectStartYear = project.year;
+        if (project.year == null || project.year === "") return false;
+
+        const projectStartYear = Number(project.year);
 
         if (!Number.isFinite(projectStartYear)) return false;
 
@@ -469,7 +140,7 @@ function renderProjects() {
     .map((project) => {
       const mentorHtml = project.mentor
         ? '<div class="project-meta project-mentor">Наставник: ' +
-          project.mentor +
+          escapeHtml(project.mentor) +
           "</div>"
         : "";
 
@@ -480,13 +151,15 @@ function renderProjects() {
           data-project-type="${project.type}"
         >
             <div class="project-card-header">
-                <h2 class="project-title">${project.name}</h2>
+                <h2 class="project-title">${escapeHtml(project.name)}</h2>
             </div>
             <div class="project-meta">
               Годы реализации: ${getDisplayYears(project)}
             </div>
             ${mentorHtml}
-            <p class="project-description">${project.description}</p>
+            <p class="project-description">${escapeHtml(
+              project.description
+            )}</p>
         </article>
     `;
     })
@@ -495,6 +168,66 @@ function renderProjects() {
   cardsContainer.innerHTML = html;
 
   attachCardClickHandlers();
+}
+
+function renderTeamStudents(groups) {
+  if (!modalStudentsList) return;
+
+  const items = [];
+
+  groups.forEach(({ teamName, students }) => {
+    items.push(
+      `<li class="project-modal__team-group-title">Команда: ${escapeHtml(
+        teamName
+      )}</li>`
+    );
+
+    if (Array.isArray(students) && students.length > 0) {
+      students.forEach((student) => {
+        const initial =
+          (student.name && student.name.trim().charAt(0).toUpperCase()) || "?";
+
+        items.push(`
+          <li class="project-modal__student">
+            <div class="project-modal__student-photo-wrapper">
+              ${
+                student.photoUrl
+                  ? `<img src="${escapeHtml(
+                      student.photoUrl
+                    )}" alt="${escapeHtml(
+                      student.name
+                    )}" class="project-modal__student-photo">`
+                  : `<div class="project-modal__student-placeholder">${initial}</div>`
+              }
+            </div>
+            <div class="project-modal__student-info">
+              <div class="project-modal__student-name">${escapeHtml(
+                student.name
+              )}</div>
+              <div class="project-modal__student-role">${escapeHtml(
+                student.role
+              )}</div>
+            </div>
+          </li>
+        `);
+      });
+    } else {
+      items.push(
+        '<li class="project-modal__student project-modal__student--empty">Нет данных по студентам.</li>'
+      );
+    }
+  });
+
+  modalStudentsList.innerHTML = items.join("");
+}
+
+function renderTeamStudentsPlaceholder(message) {
+  if (!modalStudentsList) return;
+
+  modalStudentsList.innerHTML =
+    '<li class="project-modal__student project-modal__student--empty">' +
+    message +
+    "</li>";
 }
 
 function attachCardClickHandlers() {
@@ -554,66 +287,59 @@ function resetFilters() {
 }
 
 function openProjectModal(projectId) {
+  const requestId = (activeModalRequestId += 1);
+
   loadProjectDetails(projectId)
     .then((project) => {
-      if (!project) return;
+      if (!project || requestId !== activeModalRequestId) return;
 
-      modalTitle.textContent = project.name || "Проект";
+      const base = projects.find((item) => item.id === projectId) || {};
+      const combined = { ...base, ...project };
+
+      modalTitle.textContent = combined.name || "Проект";
 
       if (modalTeamName) {
-        if (project.teamName) {
-          modalTeamName.textContent = `«${project.teamName}»`;
-        } else {
-          modalTeamName.textContent = "";
-        }
+        const teamNames = Array.isArray(combined.teamNames)
+          ? combined.teamNames.filter(Boolean)
+          : [];
+        modalTeamName.textContent = teamNames.join(", ");
       }
 
-      const imageUrl = project.imageUrl || DEFAULT_PROJECT_IMAGE_URL;
+      const imageUrl = combined.imageUrl || DEFAULT_PROJECT_IMAGE_URL;
       modalImage.src = imageUrl;
-      modalImage.alt = project.name || "Изображение проекта";
+      modalImage.alt = combined.name || "Изображение проекта";
 
       modalDescription.textContent =
-        project.fullDescription || project.description || "";
+        combined.fullDescription || combined.description || "";
 
-      if (project.pdfUrl) {
-        modalPdfLink.href = project.pdfUrl;
+      if (combined.pdfUrl) {
+        modalPdfLink.href = combined.pdfUrl;
         modalPdfLink.style.display = "";
       } else {
         modalPdfLink.removeAttribute("href");
         modalPdfLink.style.display = "none";
       }
 
-      if (Array.isArray(project.students) && project.students.length > 0) {
-        const studentsHtml = project.students
-          .map((student) => {
-            const initial =
-              (student.name && student.name.trim().charAt(0).toUpperCase()) ||
-              "?";
+      const teamNames = Array.isArray(combined.teamNames)
+        ? combined.teamNames.filter(Boolean)
+        : [];
 
-            return `
-              <li class="project-modal__student">
-                <div class="project-modal__student-photo-wrapper">
-                  ${
-                    student.photoUrl
-                      ? `<img src="${student.photoUrl}" alt="${student.name}" class="project-modal__student-photo">`
-                      : `<div class="project-modal__student-placeholder">${initial}</div>`
-                  }
-                </div>
-                <div class="project-modal__student-info">
-                  <div class="project-modal__student-name">${student.name}</div>
-                  <div class="project-modal__student-role">${student.role}</div>
-                </div>
-              </li>
-            `;
-          })
-          .join("");
-
-        modalStudentsList.innerHTML = studentsHtml;
+      if (teamNames.length === 0) {
+        renderTeamStudentsPlaceholder("Информация о командах появится позже.");
       } else {
-        modalStudentsList.innerHTML =
-          '<li class="project-modal__student project-modal__student--empty">' +
-          "Информация о команде появится позже." +
-          "</li>";
+        renderTeamStudentsPlaceholder("Загрузка списка студентов...");
+
+        Promise.all(
+          teamNames.map((teamName) =>
+            loadTeamStudents(teamName).then((students) => ({
+              teamName,
+              students,
+            }))
+          )
+        ).then((groups) => {
+          if (requestId !== activeModalRequestId) return;
+          renderTeamStudents(groups);
+        });
       }
 
       modalBackdrop.classList.add("is-open");
@@ -627,10 +353,6 @@ function openProjectModal(projectId) {
 function closeProjectModal() {
   modalBackdrop.classList.remove("is-open");
   modalBackdrop.setAttribute("aria-hidden", "true");
-}
-
-if (modalCloseButton) {
-  modalCloseButton.addEventListener("click", closeProjectModal);
 }
 
 if (modalBackdrop) {
@@ -648,6 +370,12 @@ document.addEventListener("keydown", (event) => {
 });
 
 function init() {
+  const contacts = document.getElementById("contacts");
+  const sidebarInner = document.querySelector(".sidebar-inner");
+  if (contacts && sidebarInner) {
+    sidebarInner.appendChild(contacts);
+  }
+
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => toggleFilter(button));
   });
