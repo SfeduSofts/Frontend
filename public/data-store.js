@@ -1,5 +1,5 @@
 (() => {
-  const API_BASE = "/api";
+  const API_BASE = "http://127.0.0.1:8000/api";
   const LOGIN_URL = "https://lms.sfedu.ru/auth/oidc/?source=loginpage";
 
   async function requestJson(path, options = {}) {
@@ -9,6 +9,8 @@
         "Content-Type": "application/json",
         ...(options.headers || {}),
       },
+
+      
       ...options,
     });
 

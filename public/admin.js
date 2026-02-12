@@ -355,9 +355,11 @@ async function createProject() {
   const newProject = await DataStore.createProject({
     name: "Новый проект",
     type: defaultType,
-    year: defaultYear === "" ? null : defaultYear,
-    description: "",
+    year: 2016,
+    description: "Введите краткое описание проекта",
     mentor: "",
+    mentor_email: "",
+    slug: "slug",
   });
 
   projects.push(newProject);
