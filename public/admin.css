@@ -108,10 +108,22 @@
   color: #ffffff;
 }
 
+.admin-button--delete {
+  margin-right: auto;
+  border-color: rgba(184, 33, 33, 0.35);
+  background-color: rgba(184, 33, 33, 0.06);
+  color: #b82121;
+}
+
 .admin-button--save:hover,
-.admin-button--cancel:hover {
+.admin-button--cancel:hover,
+.admin-button--delete:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(33, 62, 137, 0.18);
+}
+
+.admin-button--delete:hover {
+  background-color: rgba(184, 33, 33, 0.12);
 }
 
 .admin-student-row {

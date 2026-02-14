@@ -26,6 +26,7 @@ const adminPdfUrlInput = document.getElementById("adminProjectPdfUrl");
 const adminTeamNamesInput = document.getElementById("adminProjectTeamNames");
 const adminSaveButton = document.getElementById("adminSaveButton");
 const adminCancelButton = document.getElementById("adminCancelButton");
+const adminDeleteButton = document.getElementById("adminDeleteButton");
 
 const state = {
   search: "",
@@ -574,6 +575,31 @@ async function saveCurrentProject() {
   }
 }
 
+async function deleteCurrentProject() {
+  if (currentProjectId == null) return;
+
+  const projectToDelete = projects.find((item) => item.id === currentProjectId);
+  const projectName = projectToDelete?.name?.trim() || "этот проект";
+
+  const isConfirmed = window.confirm(
+    `Удалить проект "${projectName}"? Это действие нельзя отменить.`
+  );
+
+  if (!isConfirmed) return;
+
+  const projectId = currentProjectId;
+
+  try {
+    await DataStore.deleteProject(projectId);
+    projects = projects.filter((item) => item.id !== projectId);
+    closeProjectModal();
+    renderProjects();
+  } catch (error) {
+    console.error("Ошибка удаления проекта:", error);
+    alert("Не удалось удалить проект. Попробуйте ещё раз.");
+  }
+}
+
 function handleStudentListClick(event) {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
@@ -662,6 +688,10 @@ function init() {
 
   if (adminCancelButton) {
     adminCancelButton.addEventListener("click", closeProjectModal);
+  }
+
+  if (adminDeleteButton) {
+    adminDeleteButton.addEventListener("click", deleteCurrentProject);
   }
 
 

@@ -65,6 +65,11 @@
         body: JSON.stringify(payload),
       });
     },
+    deleteProject(projectId) {
+      return requestJson(`/projects/${projectId}`, {
+        method: "DELETE",
+      });
+    },
     updateProjectDetails(projectId, payload) {
       return requestJson(`/projects/${projectId}/details`, {
         method: "PUT",
