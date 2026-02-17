@@ -359,7 +359,6 @@ async function createProject() {
     year: 2016,
     description: "Введите краткое описание проекта",
     mentor: "",
-    mentor_email: "",
     slug: "slug",
   });
 
@@ -544,6 +543,7 @@ async function saveCurrentProject() {
     year: normalizedYear,
     description: adminShortDescriptionInput.value.trim(),
     mentor: adminMentorInput.value.trim(),
+    full_description: modalDescription.value.trim(),
   };
 
   try {
@@ -552,13 +552,6 @@ async function saveCurrentProject() {
       updatedProject
     );
     projects[projectIndex] = savedProject || updatedProject;
-
-    await DataStore.updateProjectDetails(currentProjectId, {
-      fullDescription: modalDescription.value.trim(),
-      imageUrl: adminImageUrlInput.value.trim(),
-      pdfUrl: adminPdfUrlInput.value.trim(),
-      teamNames: currentTeamNames,
-    });
 
     await Promise.all(
       currentTeamNames.map((teamName) => {
