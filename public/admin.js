@@ -1,7 +1,9 @@
-let projects = [];
+﻿let projects = [];
 let projectsLoaded = false;
 
 const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
+const PROJECT_TYPE_MP1 = "\u041C\u041F1";
+const PROJECT_TYPE_MP2 = "\u041C\u041F2";
 
 const cardsContainer = document.getElementById("cardsContainer");
 const searchInput = document.getElementById("searchInput");
@@ -21,8 +23,13 @@ const adminMentorInput = document.getElementById("adminProjectMentor");
 const adminShortDescriptionInput = document.getElementById(
   "adminProjectShortDescription"
 );
-const adminImageUrlInput = document.getElementById("adminProjectImageUrl");
-const adminPdfUrlInput = document.getElementById("adminProjectPdfUrl");
+const adminProtectedInput = document.getElementById("adminProjectProtected");
+const adminPhotoFileInput = document.getElementById("adminProjectPhotoFile");
+const adminPdfFileInput = document.getElementById("adminProjectPdfFile");
+const adminPhotoStatus = document.getElementById("adminProjectPhotoStatus");
+const adminPdfStatus = document.getElementById("adminProjectPdfStatus");
+const adminRemovePhotoInput = document.getElementById("adminRemoveProjectPhoto");
+const adminRemovePdfInput = document.getElementById("adminRemoveProjectPdf");
 const adminTeamNamesInput = document.getElementById("adminProjectTeamNames");
 const adminSaveButton = document.getElementById("adminSaveButton");
 const adminCancelButton = document.getElementById("adminCancelButton");
@@ -38,6 +45,10 @@ let currentProjectId = null;
 let currentTeamNames = [];
 let draftTeamStudents = {};
 let activeModalRequestId = 0;
+let currentProjectPhotoUrl = "";
+let currentProjectPdfUrl = "";
+let selectedPhotoPreviewUrl = "";
+let selectedPdfPreviewUrl = "";
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -48,6 +59,113 @@ const escapeHtml = (value) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+
+function normalizeProjectType(type) {
+  const raw = String(type || "").trim().toUpperCase();
+  if (raw === "MP2" || raw.endsWith("2")) {
+    return PROJECT_TYPE_MP2;
+  }
+  return PROJECT_TYPE_MP1;
+}
+
+function isProjectTypeMp2(type) {
+  return normalizeProjectType(type) === PROJECT_TYPE_MP2;
+}
+
+function getProjectPhotoUrl(payload) {
+  return (
+    payload?.imageUrl || payload?.photo_src || payload?.photoSrc || ""
+  );
+}
+
+function getProjectPdfUrl(payload) {
+  return payload?.pdfUrl || payload?.pdf_src || payload?.pdfSrc || "";
+}
+
+function getProjectProtected(payload) {
+  return Boolean(payload?.protected);
+}
+
+function getProjectTeamNames(payload) {
+  if (!Array.isArray(payload?.teamNames)) return [];
+
+  return payload.teamNames
+    .map((team) => (typeof team === "string" ? team : team?.name))
+    .filter(Boolean);
+}
+
+function revokePreviewUrl(url) {
+  if (url) {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function resetDocumentDraft() {
+  revokePreviewUrl(selectedPhotoPreviewUrl);
+  revokePreviewUrl(selectedPdfPreviewUrl);
+  selectedPhotoPreviewUrl = "";
+  selectedPdfPreviewUrl = "";
+
+  currentProjectPhotoUrl = "";
+  currentProjectPdfUrl = "";
+
+  if (adminPhotoFileInput) {
+    adminPhotoFileInput.value = "";
+  }
+  if (adminPdfFileInput) {
+    adminPdfFileInput.value = "";
+  }
+  if (adminRemovePhotoInput) {
+    adminRemovePhotoInput.checked = false;
+  }
+  if (adminRemovePdfInput) {
+    adminRemovePdfInput.checked = false;
+  }
+}
+
+function updatePhotoStatus() {
+  if (!adminPhotoStatus) return;
+
+  const selectedPhoto = adminPhotoFileInput?.files?.[0];
+  if (selectedPhoto) {
+    adminPhotoStatus.textContent = `Р’С‹Р±СЂР°РЅ С„Р°Р№Р»: ${selectedPhoto.name}`;
+    return;
+  }
+
+  if (adminRemovePhotoInput?.checked) {
+    adminPhotoStatus.textContent = "Р¤РѕС‚Рѕ Р±СѓРґРµС‚ СѓРґР°Р»РµРЅРѕ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё";
+    return;
+  }
+
+  if (currentProjectPhotoUrl) {
+    adminPhotoStatus.textContent = "Р—Р°РіСЂСѓР¶РµРЅРѕ С‚РµРєСѓС‰РµРµ С„РѕС‚Рѕ РїСЂРѕРµРєС‚Р°";
+    return;
+  }
+
+  adminPhotoStatus.textContent = "Р¤РѕС‚Рѕ РЅРµ Р·Р°РіСЂСѓР¶РµРЅРѕ";
+}
+
+function updatePdfStatus() {
+  if (!adminPdfStatus) return;
+
+  const selectedPdf = adminPdfFileInput?.files?.[0];
+  if (selectedPdf) {
+    adminPdfStatus.textContent = `Р’С‹Р±СЂР°РЅ С„Р°Р№Р»: ${selectedPdf.name}`;
+    return;
+  }
+
+  if (adminRemovePdfInput?.checked) {
+    adminPdfStatus.textContent = "PDF Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё";
+    return;
+  }
+
+  if (currentProjectPdfUrl) {
+    adminPdfStatus.textContent = "Р—Р°РіСЂСѓР¶РµРЅ С‚РµРєСѓС‰РёР№ PDF РїСЂРѕРµРєС‚Р°";
+    return;
+  }
+
+  adminPdfStatus.textContent = "PDF РЅРµ Р·Р°РіСЂСѓР¶РµРЅ";
+}
 
 function loadProjects() {
   return DataStore.loadProjects();
@@ -66,9 +184,9 @@ function getDisplayYears(project) {
 
   if (!Number.isFinite(startYear)) return "";
 
-  if (project.type === "МП2") {
+  if (isProjectTypeMp2(project.type)) {
     const endYear = startYear + 1;
-    return `${startYear}–${endYear}`;
+    return `${startYear}вЂ“${endYear}`;
   }
 
   return String(startYear);
@@ -81,7 +199,7 @@ function parseYearRangeLabel(label) {
   if (!raw) return null;
 
   const parts = raw
-    .split(/[-–]/)
+    .split(/[-вЂ“]/)
     .map((s) => s.trim())
     .filter(Boolean);
 
@@ -106,9 +224,9 @@ function renderProjects() {
     cardsContainer.innerHTML =
       '<article class="project-card">' +
       '<div class="project-card-header">' +
-      '<h2 class="project-title">Загрузка проектов...</h2>' +
+      '<h2 class="project-title">Р—Р°РіСЂСѓР·РєР° РїСЂРѕРµРєС‚РѕРІ...</h2>' +
       "</div>" +
-      '<p class="project-description">Пожалуйста, подождите.</p>' +
+      '<p class="project-description">РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РїРѕРґРѕР¶РґРёС‚Рµ.</p>' +
       "</article>";
     return;
   }
@@ -142,7 +260,7 @@ function renderProjects() {
   });
 
   const addCardHtml =
-    '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Добавить проект">' +
+    '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Р”РѕР±Р°РІРёС‚СЊ РїСЂРѕРµРєС‚">' +
     '<span class="admin-add-card__icon" aria-hidden="true">+</span>' +
     "</button>";
 
@@ -151,9 +269,9 @@ function renderProjects() {
       addCardHtml +
       '<article class="project-card">' +
       '<div class="project-card-header">' +
-      '<h2 class="project-title">Нет проектов</h2>' +
+      '<h2 class="project-title">РќРµС‚ РїСЂРѕРµРєС‚РѕРІ</h2>' +
       "</div>" +
-      '<p class="project-description">Попробуйте изменить параметры поиска или фильтры.</p>' +
+      '<p class="project-description">РџРѕРїСЂРѕР±СѓР№С‚Рµ РёР·РјРµРЅРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РїРѕРёСЃРєР° РёР»Рё С„РёР»СЊС‚СЂС‹.</p>' +
       "</article>";
     bindAddProjectButton();
     return;
@@ -164,7 +282,7 @@ function renderProjects() {
     filtered
       .map((project) => {
       const mentorHtml = project.mentor
-        ? '<div class="project-meta project-mentor">Наставник: ' +
+        ? '<div class="project-meta project-mentor">РќР°СЃС‚Р°РІРЅРёРє: ' +
           escapeHtml(project.mentor) +
           "</div>"
         : "";
@@ -179,7 +297,7 @@ function renderProjects() {
                 <h2 class="project-title">${escapeHtml(project.name)}</h2>
             </div>
             <div class="project-meta">
-              Годы реализации: ${getDisplayYears(project)}
+              Р“РѕРґС‹ СЂРµР°Р»РёР·Р°С†РёРё: ${getDisplayYears(project)}
             </div>
             ${mentorHtml}
             <p class="project-description">${escapeHtml(
@@ -224,7 +342,7 @@ function toggleFilter(button) {
   }
 
   if (filterType === "year") {
-    const raw = button.dataset.value; // например "2024–2025"
+    const raw = button.dataset.value; // РЅР°РїСЂРёРјРµСЂ "2024вЂ“2025"
 
     if (state.years.has(raw)) {
       state.years.delete(raw);
@@ -265,7 +383,7 @@ function renderTeamStudentsEditor() {
   if (!modalStudentsList) return;
 
   if (currentTeamNames.length === 0) {
-    renderTeamStudentsPlaceholder("Информация о командах появится позже.");
+    renderTeamStudentsPlaceholder("РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РєРѕРјР°РЅРґР°С… РїРѕСЏРІРёС‚СЃСЏ РїРѕР·Р¶Рµ.");
     return;
   }
 
@@ -278,9 +396,9 @@ function renderTeamStudentsEditor() {
     items.push(`
       <li class="project-modal__team-group-title">
         <div class="admin-team-actions">
-          <span>Команда: ${escapeHtml(teamName)}</span>
+          <span>РљРѕРјР°РЅРґР°: ${escapeHtml(teamName)}</span>
           <button class="admin-small-button" data-action="add-student" data-team="${teamKey}">
-            + Студент
+            + РЎС‚СѓРґРµРЅС‚
           </button>
         </div>
       </li>
@@ -288,7 +406,7 @@ function renderTeamStudentsEditor() {
 
     if (students.length === 0) {
       items.push(
-        '<li class="project-modal__student project-modal__student--empty">Нет данных по студентам.</li>'
+        '<li class="project-modal__student project-modal__student--empty">РќРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃС‚СѓРґРµРЅС‚Р°Рј.</li>'
       );
       return;
     }
@@ -300,21 +418,21 @@ function renderTeamStudentsEditor() {
             class="admin-input admin-student-input"
             data-field="name"
             type="text"
-            placeholder="Имя"
+            placeholder="РРјСЏ"
             value="${escapeHtml(student.name)}"
           />
           <input
             class="admin-input admin-student-input"
             data-field="role"
             type="text"
-            placeholder="Роль"
+            placeholder="Р РѕР»СЊ"
             value="${escapeHtml(student.role)}"
           />
           <input
             class="admin-input admin-student-input"
             data-field="photoUrl"
             type="text"
-            placeholder="Фото URL"
+            placeholder="Р¤РѕС‚Рѕ URL"
             value="${escapeHtml(student.photoUrl)}"
           />
           <button
@@ -323,7 +441,7 @@ function renderTeamStudentsEditor() {
             data-team="${teamKey}"
             data-index="${index}"
           >
-            Удалить
+            РЈРґР°Р»РёС‚СЊ
           </button>
         </li>
       `);
@@ -335,9 +453,9 @@ function renderTeamStudentsEditor() {
 
 function getDefaultTypeFromFilters() {
   if (state.types.size === 1) {
-    return Array.from(state.types)[0];
+    return normalizeProjectType(Array.from(state.types)[0]);
   }
-  return "МП1";
+  return PROJECT_TYPE_MP1;
 }
 
 function getDefaultYearFromFilters() {
@@ -354,10 +472,11 @@ async function createProject() {
   const defaultYear = getDefaultYearFromFilters();
 
   const newProject = await DataStore.createProject({
-    name: "Новый проект",
+    name: "РќРѕРІС‹Р№ РїСЂРѕРµРєС‚",
     type: defaultType,
-    year: 2016,
-    description: "Введите краткое описание проекта",
+    year: defaultYear || 2016,
+    description: "Р’РІРµРґРёС‚Рµ РєСЂР°С‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ РїСЂРѕРµРєС‚Р°",
+    protected: false,
     mentor: "",
     slug: "slug",
   });
@@ -374,8 +493,8 @@ async function handleAddProjectClick() {
     renderProjects();
     openProjectModal(newProjectId);
   } catch (error) {
-    console.error("Ошибка создания проекта:", error);
-    alert("Не удалось создать проект. Попробуйте ещё раз.");
+    console.error("РћС€РёР±РєР° СЃРѕР·РґР°РЅРёСЏ РїСЂРѕРµРєС‚Р°:", error);
+    alert("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РїСЂРѕРµРєС‚. РџРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р·.");
   }
 }
 
@@ -411,11 +530,11 @@ function syncTeamNamesFromInput() {
 
 function loadTeamsData(teamNames, requestId) {
   if (teamNames.length === 0) {
-    renderTeamStudentsPlaceholder("Информация о командах появится позже.");
+    renderTeamStudentsPlaceholder("РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РєРѕРјР°РЅРґР°С… РїРѕСЏРІРёС‚СЃСЏ РїРѕР·Р¶Рµ.");
     return;
   }
 
-  renderTeamStudentsPlaceholder("Загрузка списка студентов...");
+  renderTeamStudentsPlaceholder("Р—Р°РіСЂСѓР·РєР° СЃРїРёСЃРєР° СЃС‚СѓРґРµРЅС‚РѕРІ...");
 
   Promise.all(
     teamNames.map((teamName) => {
@@ -444,13 +563,18 @@ function loadTeamsData(teamNames, requestId) {
 }
 
 function updateImagePreview() {
-  const imageUrl = adminImageUrlInput.value.trim();
+  const imageUrl =
+    selectedPhotoPreviewUrl ||
+    (adminRemovePhotoInput?.checked ? "" : currentProjectPhotoUrl);
   modalImage.src = imageUrl || DEFAULT_PROJECT_IMAGE_URL;
   modalImage.alt = adminNameInput.value.trim() || "Изображение проекта";
+  updatePhotoStatus();
 }
 
 function updatePdfPreview() {
-  const pdfUrl = adminPdfUrlInput.value.trim();
+  const pdfUrl =
+    selectedPdfPreviewUrl || (adminRemovePdfInput?.checked ? "" : currentProjectPdfUrl);
+
   if (pdfUrl) {
     modalPdfLink.href = pdfUrl;
     modalPdfLink.style.display = "";
@@ -458,6 +582,58 @@ function updatePdfPreview() {
     modalPdfLink.removeAttribute("href");
     modalPdfLink.style.display = "none";
   }
+
+  updatePdfStatus();
+}
+
+function handlePhotoFileChange() {
+  revokePreviewUrl(selectedPhotoPreviewUrl);
+  selectedPhotoPreviewUrl = "";
+
+  const selectedPhoto = adminPhotoFileInput?.files?.[0];
+  if (selectedPhoto) {
+    selectedPhotoPreviewUrl = URL.createObjectURL(selectedPhoto);
+    if (adminRemovePhotoInput) {
+      adminRemovePhotoInput.checked = false;
+    }
+  }
+
+  updateImagePreview();
+}
+
+function handlePdfFileChange() {
+  revokePreviewUrl(selectedPdfPreviewUrl);
+  selectedPdfPreviewUrl = "";
+
+  const selectedPdf = adminPdfFileInput?.files?.[0];
+  if (selectedPdf) {
+    selectedPdfPreviewUrl = URL.createObjectURL(selectedPdf);
+    if (adminRemovePdfInput) {
+      adminRemovePdfInput.checked = false;
+    }
+  }
+
+  updatePdfPreview();
+}
+
+function handleRemovePhotoToggle() {
+  if (adminRemovePhotoInput?.checked && adminPhotoFileInput) {
+    adminPhotoFileInput.value = "";
+    revokePreviewUrl(selectedPhotoPreviewUrl);
+    selectedPhotoPreviewUrl = "";
+  }
+
+  updateImagePreview();
+}
+
+function handleRemovePdfToggle() {
+  if (adminRemovePdfInput?.checked && adminPdfFileInput) {
+    adminPdfFileInput.value = "";
+    revokePreviewUrl(selectedPdfPreviewUrl);
+    selectedPdfPreviewUrl = "";
+  }
+
+  updatePdfPreview();
 }
 
 function openProjectModal(projectId) {
@@ -468,16 +644,22 @@ function openProjectModal(projectId) {
 
   currentProjectId = projectId;
 
+  resetDocumentDraft();
+
   adminNameInput.value = base.name || "";
-  adminTypeInput.value = base.type || "";
+  adminTypeInput.value = normalizeProjectType(base.type);
   adminYearInput.value = base.year ?? "";
   adminMentorInput.value = base.mentor || "";
   adminShortDescriptionInput.value = base.description || "";
+  if (adminProtectedInput) {
+    adminProtectedInput.checked = getProjectProtected(base);
+  }
 
   modalDescription.value = base.description || "";
-  adminImageUrlInput.value = "";
-  adminPdfUrlInput.value = "";
   adminTeamNamesInput.value = "";
+
+  currentProjectPhotoUrl = getProjectPhotoUrl(base);
+  currentProjectPdfUrl = getProjectPdfUrl(base);
 
   updateImagePreview();
   updatePdfPreview();
@@ -494,13 +676,17 @@ function openProjectModal(projectId) {
       if (requestId !== activeModalRequestId) return;
 
       modalDescription.value =
-        details.fullDescription || base.description || "";
-      adminImageUrlInput.value = details.imageUrl || "";
-      adminPdfUrlInput.value = details.pdfUrl || "";
+        details.fullDescription || details.full_description || base.description || "";
 
-      adminTeamNamesInput.value = Array.isArray(details.teamNames)
-        ? details.teamNames.join(", ")
-        : "";
+      currentProjectPhotoUrl = getProjectPhotoUrl(details);
+      currentProjectPdfUrl = getProjectPdfUrl(details);
+
+      if (adminProtectedInput && typeof details?.protected === "boolean") {
+        adminProtectedInput.checked = details.protected;
+      }
+
+      const detailTeamNames = getProjectTeamNames(details);
+      adminTeamNamesInput.value = detailTeamNames.join(", ");
 
       updateImagePreview();
       updatePdfPreview();
@@ -521,6 +707,7 @@ function closeProjectModal() {
   currentProjectId = null;
   currentTeamNames = [];
   draftTeamStudents = {};
+  resetDocumentDraft();
 }
 
 async function saveCurrentProject() {
@@ -539,12 +726,21 @@ async function saveCurrentProject() {
   const updatedProject = {
     ...projects[projectIndex],
     name: adminNameInput.value.trim() || "Без названия",
-    type: adminTypeInput.value.trim(),
+    type: normalizeProjectType(adminTypeInput.value),
+    protected: Boolean(adminProtectedInput?.checked),
     year: normalizedYear,
     description: adminShortDescriptionInput.value.trim(),
     mentor: adminMentorInput.value.trim(),
     full_description: modalDescription.value.trim(),
   };
+
+  const photoFile = adminPhotoFileInput?.files?.[0] || null;
+  const pdfFile = adminPdfFileInput?.files?.[0] || null;
+  const removePhoto = Boolean(adminRemovePhotoInput?.checked);
+  const removePdf = Boolean(adminRemovePdfInput?.checked);
+  const shouldUpdateDocuments = Boolean(
+    photoFile || pdfFile || removePhoto || removePdf
+  );
 
   try {
     const savedProject = await DataStore.updateProject(
@@ -552,6 +748,15 @@ async function saveCurrentProject() {
       updatedProject
     );
     projects[projectIndex] = savedProject || updatedProject;
+
+    if (shouldUpdateDocuments) {
+      await DataStore.updateProjectDocuments(currentProjectId, {
+        photoFile,
+        pdfFile,
+        removePhoto,
+        removePdf,
+      });
+    }
 
     await Promise.all(
       currentTeamNames.map((teamName) => {
@@ -572,10 +777,10 @@ async function deleteCurrentProject() {
   if (currentProjectId == null) return;
 
   const projectToDelete = projects.find((item) => item.id === currentProjectId);
-  const projectName = projectToDelete?.name?.trim() || "этот проект";
+  const projectName = projectToDelete?.name?.trim() || "СЌС‚РѕС‚ РїСЂРѕРµРєС‚";
 
   const isConfirmed = window.confirm(
-    `Удалить проект "${projectName}"? Это действие нельзя отменить.`
+    `РЈРґР°Р»РёС‚СЊ РїСЂРѕРµРєС‚ "${projectName}"? Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ.`
   );
 
   if (!isConfirmed) return;
@@ -588,8 +793,8 @@ async function deleteCurrentProject() {
     closeProjectModal();
     renderProjects();
   } catch (error) {
-    console.error("Ошибка удаления проекта:", error);
-    alert("Не удалось удалить проект. Попробуйте ещё раз.");
+    console.error("РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ РїСЂРѕРµРєС‚Р°:", error);
+    alert("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ РїСЂРѕРµРєС‚. РџРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р·.");
   }
 }
 
@@ -708,12 +913,20 @@ function init() {
   });
   }
 
-  if (adminImageUrlInput) {
-    adminImageUrlInput.addEventListener("input", updateImagePreview);
+  if (adminPhotoFileInput) {
+    adminPhotoFileInput.addEventListener("change", handlePhotoFileChange);
   }
 
-  if (adminPdfUrlInput) {
-    adminPdfUrlInput.addEventListener("input", updatePdfPreview);
+  if (adminPdfFileInput) {
+    adminPdfFileInput.addEventListener("change", handlePdfFileChange);
+  }
+
+  if (adminRemovePhotoInput) {
+    adminRemovePhotoInput.addEventListener("change", handleRemovePhotoToggle);
+  }
+
+  if (adminRemovePdfInput) {
+    adminRemovePdfInput.addEventListener("change", handleRemovePdfToggle);
   }
 
   if (adminNameInput) {
@@ -727,23 +940,25 @@ function init() {
       renderProjects();
     })
     .catch((error) => {
-      console.error("Ошибка загрузки списка проектов:", error);
+      console.error("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё СЃРїРёСЃРєР° РїСЂРѕРµРєС‚РѕРІ:", error);
       projects = [];
       projectsLoaded = true;
       const addCardHtml =
-        '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Добавить проект">' +
+        '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Р”РѕР±Р°РІРёС‚СЊ РїСЂРѕРµРєС‚">' +
         '<span class="admin-add-card__icon" aria-hidden="true">+</span>' +
         "</button>";
       cardsContainer.innerHTML =
         addCardHtml +
         '<article class="project-card">' +
         '<div class="project-card-header">' +
-        '<h2 class="project-title">Не удалось загрузить проекты</h2>' +
+        '<h2 class="project-title">РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РїСЂРѕРµРєС‚С‹</h2>' +
         "</div>" +
-        '<p class="project-description">Проверьте доступность API и обновите страницу.</p>' +
+        '<p class="project-description">РџСЂРѕРІРµСЂСЊС‚Рµ РґРѕСЃС‚СѓРїРЅРѕСЃС‚СЊ API Рё РѕР±РЅРѕРІРёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ.</p>' +
         "</article>";
       bindAddProjectButton();
     });
 }
 
 init();
+
+

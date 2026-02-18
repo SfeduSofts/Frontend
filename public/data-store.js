@@ -3,15 +3,20 @@
   const LOGIN_URL = "https://lms.sfedu.ru/auth/oidc/?source=loginpage";
 
   async function requestJson(path, options = {}) {
+    const {
+      skipJsonContentType = false,
+      headers: customHeaders = {},
+      ...fetchOptions
+    } = options;
+    const headers = {
+      ...(skipJsonContentType ? {} : { "Content-Type": "application/json" }),
+      ...customHeaders,
+    };
+
     const response = await fetch(`${API_BASE}${path}`, {
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
-
-      
-      ...options,
+      headers,
+      ...fetchOptions,
     });
 
     if (response.status === 401) {
@@ -74,6 +79,24 @@
       return requestJson(`/projects/${projectId}/details`, {
         method: "PUT",
         body: JSON.stringify(payload),
+      });
+    },
+    updateProjectDocuments(projectId, payload) {
+      const formData = new FormData();
+      if (payload?.photoFile) {
+        formData.append("photo", payload.photoFile);
+      }
+      if (payload?.pdfFile) {
+        formData.append("pdf", payload.pdfFile);
+      }
+
+      formData.append("remove_photo", String(Boolean(payload?.removePhoto)));
+      formData.append("remove_pdf", String(Boolean(payload?.removePdf)));
+
+      return requestJson(`/${projectId}/documents`, {
+        method: "PUT",
+        body: formData,
+        skipJsonContentType: true,
       });
     },
     updateTeamStudents(teamName, students) {
