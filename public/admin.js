@@ -128,21 +128,21 @@ function updatePhotoStatus() {
 
   const selectedPhoto = adminPhotoFileInput?.files?.[0];
   if (selectedPhoto) {
-    adminPhotoStatus.textContent = `Р’С‹Р±СЂР°РЅ С„Р°Р№Р»: ${selectedPhoto.name}`;
+    adminPhotoStatus.textContent = `Выбран файл: ${selectedPhoto.name}`;
     return;
   }
 
   if (adminRemovePhotoInput?.checked) {
-    adminPhotoStatus.textContent = "Р¤РѕС‚Рѕ Р±СѓРґРµС‚ СѓРґР°Р»РµРЅРѕ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё";
+    adminPhotoStatus.textContent = "Фото будет удалено при сохранении";
     return;
   }
 
   if (currentProjectPhotoUrl) {
-    adminPhotoStatus.textContent = "Р—Р°РіСЂСѓР¶РµРЅРѕ С‚РµРєСѓС‰РµРµ С„РѕС‚Рѕ РїСЂРѕРµРєС‚Р°";
+    adminPhotoStatus.textContent = "Загружен текущий фото проекта";
     return;
   }
 
-  adminPhotoStatus.textContent = "Р¤РѕС‚Рѕ РЅРµ Р·Р°РіСЂСѓР¶РµРЅРѕ";
+  adminPhotoStatus.textContent = "Фото не загружено";
 }
 
 function updatePdfStatus() {
@@ -155,16 +155,16 @@ function updatePdfStatus() {
   }
 
   if (adminRemovePdfInput?.checked) {
-    adminPdfStatus.textContent = "PDF Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё";
+    adminPdfStatus.textContent = "PDF будет удален при сохранении";
     return;
   }
 
   if (currentProjectPdfUrl) {
-    adminPdfStatus.textContent = "Р—Р°РіСЂСѓР¶РµРЅ С‚РµРєСѓС‰РёР№ PDF РїСЂРѕРµРєС‚Р°";
+    adminPdfStatus.textContent = "Загружен текущий PDF проекта";
     return;
   }
 
-  adminPdfStatus.textContent = "PDF РЅРµ Р·Р°РіСЂСѓР¶РµРЅ";
+  adminPdfStatus.textContent = "PDF не загружен";
 }
 
 function loadProjects() {
@@ -224,9 +224,9 @@ function renderProjects() {
     cardsContainer.innerHTML =
       '<article class="project-card">' +
       '<div class="project-card-header">' +
-      '<h2 class="project-title">Р—Р°РіСЂСѓР·РєР° РїСЂРѕРµРєС‚РѕРІ...</h2>' +
+      '<h2 class="project-title">Загрузка проектов...</h2>' +
       "</div>" +
-      '<p class="project-description">РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РїРѕРґРѕР¶РґРёС‚Рµ.</p>' +
+      '<p class="project-description">Пожалуйста, подождите.</p>' +
       "</article>";
     return;
   }
@@ -260,7 +260,7 @@ function renderProjects() {
   });
 
   const addCardHtml =
-    '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Р”РѕР±Р°РІРёС‚СЊ РїСЂРѕРµРєС‚">' +
+    '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Добавить проект">' +
     '<span class="admin-add-card__icon" aria-hidden="true">+</span>' +
     "</button>";
 
@@ -269,9 +269,9 @@ function renderProjects() {
       addCardHtml +
       '<article class="project-card">' +
       '<div class="project-card-header">' +
-      '<h2 class="project-title">РќРµС‚ РїСЂРѕРµРєС‚РѕРІ</h2>' +
+      '<h2 class="project-title">Нет проектов</h2>' +
       "</div>" +
-      '<p class="project-description">РџРѕРїСЂРѕР±СѓР№С‚Рµ РёР·РјРµРЅРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РїРѕРёСЃРєР° РёР»Рё С„РёР»СЊС‚СЂС‹.</p>' +
+      '<p class="project-description">Попробуйте изменить параметры поиска или фильтры.</p>' +
       "</article>";
     bindAddProjectButton();
     return;
@@ -282,7 +282,7 @@ function renderProjects() {
     filtered
       .map((project) => {
       const mentorHtml = project.mentor
-        ? '<div class="project-meta project-mentor">РќР°СЃС‚Р°РІРЅРёРє: ' +
+        ? '<div class="project-meta project-mentor">Наставник: ' +
           escapeHtml(project.mentor) +
           "</div>"
         : "";
@@ -297,7 +297,7 @@ function renderProjects() {
                 <h2 class="project-title">${escapeHtml(project.name)}</h2>
             </div>
             <div class="project-meta">
-              Р“РѕРґС‹ СЂРµР°Р»РёР·Р°С†РёРё: ${getDisplayYears(project)}
+              Год проекта: ${getDisplayYears(project)}
             </div>
             ${mentorHtml}
             <p class="project-description">${escapeHtml(
@@ -342,7 +342,7 @@ function toggleFilter(button) {
   }
 
   if (filterType === "year") {
-    const raw = button.dataset.value; // РЅР°РїСЂРёРјРµСЂ "2024вЂ“2025"
+    const raw = button.dataset.value; // например "2024–2025"
 
     if (state.years.has(raw)) {
       state.years.delete(raw);
@@ -383,7 +383,7 @@ function renderTeamStudentsEditor() {
   if (!modalStudentsList) return;
 
   if (currentTeamNames.length === 0) {
-    renderTeamStudentsPlaceholder("РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РєРѕРјР°РЅРґР°С… РїРѕСЏРІРёС‚СЃСЏ РїРѕР·Р¶Рµ.");
+    renderTeamStudentsPlaceholder("Информация о командах появится позже.");
     return;
   }
 
@@ -396,9 +396,9 @@ function renderTeamStudentsEditor() {
     items.push(`
       <li class="project-modal__team-group-title">
         <div class="admin-team-actions">
-          <span>РљРѕРјР°РЅРґР°: ${escapeHtml(teamName)}</span>
+          <span>Команда: ${escapeHtml(teamName)}</span>
           <button class="admin-small-button" data-action="add-student" data-team="${teamKey}">
-            + РЎС‚СѓРґРµРЅС‚
+            + Студент
           </button>
         </div>
       </li>
@@ -406,7 +406,7 @@ function renderTeamStudentsEditor() {
 
     if (students.length === 0) {
       items.push(
-        '<li class="project-modal__student project-modal__student--empty">РќРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃС‚СѓРґРµРЅС‚Р°Рј.</li>'
+        '<li class="project-modal__student project-modal__student--empty">Нет данных по студентам.</li>'
       );
       return;
     }
@@ -418,21 +418,21 @@ function renderTeamStudentsEditor() {
             class="admin-input admin-student-input"
             data-field="name"
             type="text"
-            placeholder="РРјСЏ"
+            placeholder="Имя"
             value="${escapeHtml(student.name)}"
           />
           <input
             class="admin-input admin-student-input"
             data-field="role"
             type="text"
-            placeholder="Р РѕР»СЊ"
+            placeholder="Роль"
             value="${escapeHtml(student.role)}"
           />
           <input
             class="admin-input admin-student-input"
             data-field="photoUrl"
             type="text"
-            placeholder="Р¤РѕС‚Рѕ URL"
+            placeholder="Фото URL"
             value="${escapeHtml(student.photoUrl)}"
           />
           <button
@@ -441,7 +441,7 @@ function renderTeamStudentsEditor() {
             data-team="${teamKey}"
             data-index="${index}"
           >
-            РЈРґР°Р»РёС‚СЊ
+            Удалить
           </button>
         </li>
       `);
@@ -472,10 +472,10 @@ async function createProject() {
   const defaultYear = getDefaultYearFromFilters();
 
   const newProject = await DataStore.createProject({
-    name: "РќРѕРІС‹Р№ РїСЂРѕРµРєС‚",
+    name: "Новый проект",
     type: defaultType,
     year: defaultYear || 2016,
-    description: "Р’РІРµРґРёС‚Рµ РєСЂР°С‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ РїСЂРѕРµРєС‚Р°",
+    description: "Введите краткое описание проекта",
     protected: false,
     mentor: "",
     slug: "slug",
@@ -493,8 +493,8 @@ async function handleAddProjectClick() {
     renderProjects();
     openProjectModal(newProjectId);
   } catch (error) {
-    console.error("РћС€РёР±РєР° СЃРѕР·РґР°РЅРёСЏ РїСЂРѕРµРєС‚Р°:", error);
-    alert("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РїСЂРѕРµРєС‚. РџРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р·.");
+    console.error("Ошибка создания проекта:", error);
+    alert("Не удалось создать проект. Попробуйте ещё раз.");
   }
 }
 
@@ -530,11 +530,11 @@ function syncTeamNamesFromInput() {
 
 function loadTeamsData(teamNames, requestId) {
   if (teamNames.length === 0) {
-    renderTeamStudentsPlaceholder("РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РєРѕРјР°РЅРґР°С… РїРѕСЏРІРёС‚СЃСЏ РїРѕР·Р¶Рµ.");
+    renderTeamStudentsPlaceholder("Информация о командах появится позже.");
     return;
   }
 
-  renderTeamStudentsPlaceholder("Р—Р°РіСЂСѓР·РєР° СЃРїРёСЃРєР° СЃС‚СѓРґРµРЅС‚РѕРІ...");
+  renderTeamStudentsPlaceholder("Загрузка списка студентов...");
 
   Promise.all(
     teamNames.map((teamName) => {
@@ -563,9 +563,7 @@ function loadTeamsData(teamNames, requestId) {
 }
 
 function updateImagePreview() {
-  const imageUrl =
-    selectedPhotoPreviewUrl ||
-    (adminRemovePhotoInput?.checked ? "" : currentProjectPhotoUrl);
+  const imageUrl = "http://localhost:8000/api/projects/" + currentProjectId + "/image";
   modalImage.src = imageUrl || DEFAULT_PROJECT_IMAGE_URL;
   modalImage.alt = adminNameInput.value.trim() || "Изображение проекта";
   updatePhotoStatus();
@@ -777,10 +775,10 @@ async function deleteCurrentProject() {
   if (currentProjectId == null) return;
 
   const projectToDelete = projects.find((item) => item.id === currentProjectId);
-  const projectName = projectToDelete?.name?.trim() || "СЌС‚РѕС‚ РїСЂРѕРµРєС‚";
+  const projectName = projectToDelete?.name?.trim() || "этот проект";
 
   const isConfirmed = window.confirm(
-    `РЈРґР°Р»РёС‚СЊ РїСЂРѕРµРєС‚ "${projectName}"? Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ.`
+    `Удалить проект "${projectName}"? Это действие необратимо.`
   );
 
   if (!isConfirmed) return;
@@ -793,8 +791,8 @@ async function deleteCurrentProject() {
     closeProjectModal();
     renderProjects();
   } catch (error) {
-    console.error("РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ РїСЂРѕРµРєС‚Р°:", error);
-    alert("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ РїСЂРѕРµРєС‚. РџРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р·.");
+    console.error("Ошибка удаления проекта:", error);
+    alert("Не удалось удалить проект. Попробуйте ещё раз.");
   }
 }
 
@@ -940,20 +938,20 @@ function init() {
       renderProjects();
     })
     .catch((error) => {
-      console.error("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё СЃРїРёСЃРєР° РїСЂРѕРµРєС‚РѕРІ:", error);
+      console.error("Ошибка загрузки списка проектов:", error);
       projects = [];
       projectsLoaded = true;
       const addCardHtml =
-        '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Р”РѕР±Р°РІРёС‚СЊ РїСЂРѕРµРєС‚">' +
+        '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Добавить проект">' +
         '<span class="admin-add-card__icon" aria-hidden="true">+</span>' +
         "</button>";
       cardsContainer.innerHTML =
         addCardHtml +
         '<article class="project-card">' +
         '<div class="project-card-header">' +
-        '<h2 class="project-title">РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РїСЂРѕРµРєС‚С‹</h2>' +
+        '<h2 class="project-title">Не удалось загрузить проекты</h2>' +
         "</div>" +
-        '<p class="project-description">РџСЂРѕРІРµСЂСЊС‚Рµ РґРѕСЃС‚СѓРїРЅРѕСЃС‚СЊ API Рё РѕР±РЅРѕРІРёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ.</p>' +
+        '<p class="project-description">Проверьте доступность API и обновите страницу.</p>' +
         "</article>";
       bindAddProjectButton();
     });

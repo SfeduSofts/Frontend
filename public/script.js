@@ -305,8 +305,8 @@ function openProjectModal(projectId) {
         modalTeamName.textContent = teamNames.join(", ");
       }
 
-      const imageUrl = combined.imageUrl || DEFAULT_PROJECT_IMAGE_URL;
-      modalImage.src = imageUrl;
+      const imageUrl = "http://localhost:8000/api/projects/" + projectId + "/image";
+      modalImage.src = imageUrl || DEFAULT_PROJECT_IMAGE_URL;
       modalImage.alt = combined.name || "Изображение проекта";
 
       modalDescription.textContent =

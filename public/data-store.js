@@ -53,7 +53,7 @@
       return requestJson("/projects");
     },
     loadProjectDetails(projectId) {
-      return requestJson(`/projects/${projectId}/details`);
+      return requestJson(`/projects/${projectId}`);
     },
     loadTeamStudents(teamName) {
       return requestJson(`/teams/${encodeURIComponent(teamName)}/students`);
@@ -82,20 +82,35 @@
       });
     },
     updateProjectDocuments(projectId, payload) {
-      const formData = new FormData();
+      const imageData = new FormData();
+      const pdfData = new FormData();
       if (payload?.photoFile) {
-        formData.append("photo", payload.photoFile);
+        imageData.append("image", payload.photoFile);
       }
       if (payload?.pdfFile) {
-        formData.append("pdf", payload.pdfFile);
+        pdfData.append("pdf", payload.pdfFile);
       }
 
-      formData.append("remove_photo", String(Boolean(payload?.removePhoto)));
-      formData.append("remove_pdf", String(Boolean(payload?.removePdf)));
+      if(payload?.removePhoto)
+        requestJson(`/projects/${projectId}/image`, {
+            method: "DELETE",
+            skipJsonContentType: true,
+      });
+      if(payload?.removePdf)
+        requestJson(`/projects/${projectId}/pdf`, {
+            method: "DELETE",
+            skipJsonContentType: true,
+      });
 
-      return requestJson(`/${projectId}/documents`, {
+      requestJson(`/projects/${projectId}/image`, {
         method: "PUT",
-        body: formData,
+        body: imageData,
+        skipJsonContentType: true,
+      });
+
+      return requestJson(`/projects/${projectId}/pdf`, {
+        method: "PUT",
+        body: pdfData,
         skipJsonContentType: true,
       });
     },
