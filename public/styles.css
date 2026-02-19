@@ -434,6 +434,10 @@ button {
   color: rgba(33, 62, 137, 0.9);
 }
 
+.catalog-page .project-modal__content {
+  max-height: calc(100vh - 48px);
+}
+
 .project-modal__pdf-link {
   display: inline-flex;
   align-items: center;

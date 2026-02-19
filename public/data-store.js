@@ -82,37 +82,55 @@
       });
     },
     updateProjectDocuments(projectId, payload) {
-      const imageData = new FormData();
-      const pdfData = new FormData();
+      const tasks = [];
+
+      if (payload?.removePhoto) {
+        tasks.push(
+          requestJson(`/projects/${projectId}/image`, {
+            method: "DELETE",
+            skipJsonContentType: true,
+          })
+        );
+      }
+
+      if (payload?.removePdf) {
+        tasks.push(
+          requestJson(`/projects/${projectId}/pdf`, {
+            method: "DELETE",
+            skipJsonContentType: true,
+          })
+        );
+      }
+
       if (payload?.photoFile) {
+        const imageData = new FormData();
         imageData.append("image", payload.photoFile);
+        tasks.push(
+          requestJson(`/projects/${projectId}/image`, {
+            method: "PUT",
+            body: imageData,
+            skipJsonContentType: true,
+          })
+        );
       }
+
       if (payload?.pdfFile) {
+        const pdfData = new FormData();
         pdfData.append("pdf", payload.pdfFile);
+        tasks.push(
+          requestJson(`/projects/${projectId}/pdf`, {
+            method: "PUT",
+            body: pdfData,
+            skipJsonContentType: true,
+          })
+        );
       }
 
-      if(payload?.removePhoto)
-        requestJson(`/projects/${projectId}/image`, {
-            method: "DELETE",
-            skipJsonContentType: true,
-      });
-      if(payload?.removePdf)
-        requestJson(`/projects/${projectId}/pdf`, {
-            method: "DELETE",
-            skipJsonContentType: true,
-      });
+      if (tasks.length === 0) {
+        return Promise.resolve(null);
+      }
 
-      requestJson(`/projects/${projectId}/image`, {
-        method: "PUT",
-        body: imageData,
-        skipJsonContentType: true,
-      });
-
-      return requestJson(`/projects/${projectId}/pdf`, {
-        method: "PUT",
-        body: pdfData,
-        skipJsonContentType: true,
-      });
+      return Promise.all(tasks);
     },
     updateTeamStudents(teamName, students) {
       return requestJson(`/teams/${encodeURIComponent(teamName)}/students`, {

@@ -223,41 +223,43 @@
 
               <div class="admin-file-grid">
                 <div class="admin-field admin-field--full">
-                  <span class="admin-label">Фото проекта</span>
+                  <span
+                    id="adminProjectPhotoStatus"
+                    class="admin-label admin-file-status"
+                  ></span>
                   <input
                     id="adminProjectPhotoFile"
-                    class="admin-input"
+                    class="admin-file-input-hidden"
                     type="file"
                     accept="image/*"
                   />
-                  <span id="adminProjectPhotoStatus" class="admin-file-status"></span>
-                  <label class="admin-checkbox-row">
-                    <input
-                      id="adminRemoveProjectPhoto"
-                      class="admin-checkbox"
-                      type="checkbox"
-                    />
-                    <span>Удалить загруженное фото</span>
-                  </label>
+                  <button
+                    id="adminProjectPhotoAction"
+                    class="admin-small-button"
+                    type="button"
+                  >
+                    Выберите файл
+                  </button>
                 </div>
 
                 <div class="admin-field admin-field--full">
-                  <span class="admin-label">PDF проекта</span>
+                  <span
+                    id="adminProjectPDFStatus"
+                    class="admin-label admin-file-status"
+                  ></span>
                   <input
                     id="adminProjectPdfFile"
-                    class="admin-input"
+                    class="admin-file-input-hidden"
                     type="file"
                     accept="application/pdf"
                   />
-                  <span id="adminProjectPdfStatus" class="admin-file-status"></span>
-                  <label class="admin-checkbox-row">
-                    <input
-                      id="adminRemoveProjectPdf"
-                      class="admin-checkbox"
-                      type="checkbox"
-                    />
-                    <span>Удалить загруженный PDF</span>
-                  </label>
+                  <button
+                    id="adminProjectPdfAction"
+                    class="admin-small-button"
+                    type="button"
+                  >
+                    Выберите файл
+                  </button>
                 </div>
               </div>
 
@@ -319,3 +321,4 @@
     <script src="admin.js"></script>
   </body>
 </html>
+

@@ -2,6 +2,7 @@ let projects = [];
 let projectsLoaded = false;
 
 const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
+const PROJECT_FILES_BASE_URL = "http://127.0.0.1:8000/api/projects";
 function loadProjects() {
   return DataStore.loadProjects();
 }
@@ -41,6 +42,51 @@ function loadProjectDetails(projectId) {
 
 function loadTeamStudents(teamName) {
   return DataStore.loadTeamStudents(teamName).catch(() => []);
+}
+
+function getProjectTeamNames(payload) {
+  const source = payload?.teamNames || payload?.team_names;
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((team) => (typeof team === "string" ? team : team?.name))
+    .filter(Boolean);
+}
+
+function getProjectFullDescription(payload) {
+  return payload?.fullDescription || payload?.full_description || payload?.description || "";
+}
+
+function getProjectPdfUrl(payload, projectId) {
+  return (
+    payload?.pdfUrl ||
+    payload?.pdf_src ||
+    payload?.pdfSrc ||
+    `${PROJECT_FILES_BASE_URL}/${projectId}/pdf`
+  );
+}
+
+function getStudentPhotoUrl(student) {
+  return student?.photoUrl || student?.photo_src || student?.photoSrc || "";
+}
+
+async function checkPdfExists(url) {
+  if (!url) return false;
+
+  try {
+    const response = await fetch(url, {
+      method: "HEAD",
+      credentials: "include",
+    });
+
+    if (response.status === 405) {
+      return true;
+    }
+
+    return response.ok;
+  } catch (_) {
+    return true;
+  }
 }
 
 function getDisplayYears(project) {
@@ -191,9 +237,9 @@ function renderTeamStudents(groups) {
           <li class="project-modal__student">
             <div class="project-modal__student-photo-wrapper">
               ${
-                student.photoUrl
+                getStudentPhotoUrl(student)
                   ? `<img src="${escapeHtml(
-                      student.photoUrl
+                      getStudentPhotoUrl(student)
                     )}" alt="${escapeHtml(
                       student.name
                     )}" class="project-modal__student-photo">`
@@ -290,7 +336,7 @@ function openProjectModal(projectId) {
   const requestId = (activeModalRequestId += 1);
 
   loadProjectDetails(projectId)
-    .then((project) => {
+    .then(async (project) => {
       if (!project || requestId !== activeModalRequestId) return;
 
       const base = projects.find((item) => item.id === projectId) || {};
@@ -299,30 +345,29 @@ function openProjectModal(projectId) {
       modalTitle.textContent = combined.name || "Проект";
 
       if (modalTeamName) {
-        const teamNames = Array.isArray(combined.teamNames)
-          ? combined.teamNames.filter(Boolean)
-          : [];
+        const teamNames = getProjectTeamNames(combined);
         modalTeamName.textContent = teamNames.join(", ");
       }
 
-      const imageUrl = "http://localhost:8000/api/projects/" + projectId + "/image";
+      const imageUrl = `${PROJECT_FILES_BASE_URL}/${projectId}/image`;
       modalImage.src = imageUrl || DEFAULT_PROJECT_IMAGE_URL;
       modalImage.alt = combined.name || "Изображение проекта";
 
-      modalDescription.textContent =
-        combined.fullDescription || combined.description || "";
+      modalDescription.textContent = getProjectFullDescription(combined);
 
-      if (combined.pdfUrl) {
-        modalPdfLink.href = combined.pdfUrl;
+      const pdfUrl = getProjectPdfUrl(combined, projectId);
+      const hasPdf = await checkPdfExists(pdfUrl);
+      if (requestId !== activeModalRequestId) return;
+
+      if (hasPdf) {
+        modalPdfLink.href = pdfUrl;
         modalPdfLink.style.display = "";
       } else {
         modalPdfLink.removeAttribute("href");
         modalPdfLink.style.display = "none";
       }
 
-      const teamNames = Array.isArray(combined.teamNames)
-        ? combined.teamNames.filter(Boolean)
-        : [];
+      const teamNames = getProjectTeamNames(combined);
 
       if (teamNames.length === 0) {
         renderTeamStudentsPlaceholder("Информация о командах появится позже.");

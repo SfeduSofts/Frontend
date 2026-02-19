@@ -2,6 +2,7 @@
 let projectsLoaded = false;
 
 const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
+const PROJECT_FILES_BASE_URL = "http://127.0.0.1:8000/api/projects";
 const PROJECT_TYPE_MP1 = "\u041C\u041F1";
 const PROJECT_TYPE_MP2 = "\u041C\u041F2";
 
@@ -27,9 +28,11 @@ const adminProtectedInput = document.getElementById("adminProjectProtected");
 const adminPhotoFileInput = document.getElementById("adminProjectPhotoFile");
 const adminPdfFileInput = document.getElementById("adminProjectPdfFile");
 const adminPhotoStatus = document.getElementById("adminProjectPhotoStatus");
-const adminPdfStatus = document.getElementById("adminProjectPdfStatus");
-const adminRemovePhotoInput = document.getElementById("adminRemoveProjectPhoto");
-const adminRemovePdfInput = document.getElementById("adminRemoveProjectPdf");
+const adminPdfStatus =
+  document.getElementById("adminProjectPDFStatus") ||
+  document.getElementById("adminProjectPdfStatus");
+const adminPhotoActionButton = document.getElementById("adminProjectPhotoAction");
+const adminPdfActionButton = document.getElementById("adminProjectPdfAction");
 const adminTeamNamesInput = document.getElementById("adminProjectTeamNames");
 const adminSaveButton = document.getElementById("adminSaveButton");
 const adminCancelButton = document.getElementById("adminCancelButton");
@@ -49,6 +52,8 @@ let currentProjectPhotoUrl = "";
 let currentProjectPdfUrl = "";
 let selectedPhotoPreviewUrl = "";
 let selectedPdfPreviewUrl = "";
+let removePhotoPending = false;
+let removePdfPending = false;
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -72,14 +77,35 @@ function isProjectTypeMp2(type) {
   return normalizeProjectType(type) === PROJECT_TYPE_MP2;
 }
 
-function getProjectPhotoUrl(payload) {
-  return (
-    payload?.imageUrl || payload?.photo_src || payload?.photoSrc || ""
-  );
+function getProjectImageEndpoint(projectId) {
+  return `${PROJECT_FILES_BASE_URL}/${projectId}/image`;
 }
 
-function getProjectPdfUrl(payload) {
-  return payload?.pdfUrl || payload?.pdf_src || payload?.pdfSrc || "";
+function getProjectPdfEndpoint(projectId) {
+  return `${PROJECT_FILES_BASE_URL}/${projectId}/pdf`;
+}
+
+async function checkFileExists(url) {
+  if (!url) return false;
+
+  try {
+    const response = await fetch(url, {
+      method: "HEAD",
+      credentials: "include",
+    });
+
+    if (response.status === 405) {
+      const fallbackResponse = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      });
+      return fallbackResponse.ok;
+    }
+
+    return response.ok;
+  } catch (_) {
+    return false;
+  }
 }
 
 function getProjectProtected(payload) {
@@ -108,6 +134,8 @@ function resetDocumentDraft() {
 
   currentProjectPhotoUrl = "";
   currentProjectPdfUrl = "";
+  removePhotoPending = false;
+  removePdfPending = false;
 
   if (adminPhotoFileInput) {
     adminPhotoFileInput.value = "";
@@ -115,12 +143,30 @@ function resetDocumentDraft() {
   if (adminPdfFileInput) {
     adminPdfFileInput.value = "";
   }
-  if (adminRemovePhotoInput) {
-    adminRemovePhotoInput.checked = false;
-  }
-  if (adminRemovePdfInput) {
-    adminRemovePdfInput.checked = false;
-  }
+}
+
+function hasPhotoDocument() {
+  if (selectedPhotoPreviewUrl) return true;
+  return Boolean(currentProjectPhotoUrl) && !removePhotoPending;
+}
+
+function hasPdfDocument() {
+  if (selectedPdfPreviewUrl) return true;
+  return Boolean(currentProjectPdfUrl) && !removePdfPending;
+}
+
+function updatePhotoActionButton() {
+  if (!adminPhotoActionButton) return;
+  adminPhotoActionButton.textContent = hasPhotoDocument()
+    ? "Удалить"
+    : "Выберите файл";
+}
+
+function updatePdfActionButton() {
+  if (!adminPdfActionButton) return;
+  adminPdfActionButton.textContent = hasPdfDocument()
+    ? "Удалить"
+    : "Выберите файл";
 }
 
 function updatePhotoStatus() {
@@ -129,20 +175,24 @@ function updatePhotoStatus() {
   const selectedPhoto = adminPhotoFileInput?.files?.[0];
   if (selectedPhoto) {
     adminPhotoStatus.textContent = `Выбран файл: ${selectedPhoto.name}`;
+    updatePhotoActionButton();
     return;
   }
 
-  if (adminRemovePhotoInput?.checked) {
+  if (removePhotoPending) {
     adminPhotoStatus.textContent = "Фото будет удалено при сохранении";
+    updatePhotoActionButton();
     return;
   }
 
   if (currentProjectPhotoUrl) {
-    adminPhotoStatus.textContent = "Загружен текущий фото проекта";
+    adminPhotoStatus.textContent = "Фото загружено";
+    updatePhotoActionButton();
     return;
   }
 
   adminPhotoStatus.textContent = "Фото не загружено";
+  updatePhotoActionButton();
 }
 
 function updatePdfStatus() {
@@ -150,21 +200,45 @@ function updatePdfStatus() {
 
   const selectedPdf = adminPdfFileInput?.files?.[0];
   if (selectedPdf) {
-    adminPdfStatus.textContent = `Р’С‹Р±СЂР°РЅ С„Р°Р№Р»: ${selectedPdf.name}`;
+    adminPdfStatus.textContent = `Выбран файл: ${selectedPdf.name}`;
+    updatePdfActionButton();
     return;
   }
 
-  if (adminRemovePdfInput?.checked) {
+  if (removePdfPending) {
     adminPdfStatus.textContent = "PDF будет удален при сохранении";
+    updatePdfActionButton();
     return;
   }
 
   if (currentProjectPdfUrl) {
-    adminPdfStatus.textContent = "Загружен текущий PDF проекта";
+    adminPdfStatus.textContent = "PDF загружен";
+    updatePdfActionButton();
     return;
   }
 
   adminPdfStatus.textContent = "PDF не загружен";
+  updatePdfActionButton();
+}
+
+async function syncCurrentProjectDocuments(requestId) {
+  if (currentProjectId == null) return;
+
+  const imageUrl = getProjectImageEndpoint(currentProjectId);
+  const pdfUrl = getProjectPdfEndpoint(currentProjectId);
+
+  const [hasImage, hasPdf] = await Promise.all([
+    checkFileExists(imageUrl),
+    checkFileExists(pdfUrl),
+  ]);
+
+  if (requestId !== activeModalRequestId) return;
+
+  currentProjectPhotoUrl = hasImage ? imageUrl : "";
+  currentProjectPdfUrl = hasPdf ? pdfUrl : "";
+
+  updateImagePreview();
+  updatePdfPreview();
 }
 
 function loadProjects() {
@@ -563,7 +637,8 @@ function loadTeamsData(teamNames, requestId) {
 }
 
 function updateImagePreview() {
-  const imageUrl = "http://localhost:8000/api/projects/" + currentProjectId + "/image";
+  const imageUrl =
+    selectedPhotoPreviewUrl || (removePhotoPending ? "" : currentProjectPhotoUrl);
   modalImage.src = imageUrl || DEFAULT_PROJECT_IMAGE_URL;
   modalImage.alt = adminNameInput.value.trim() || "Изображение проекта";
   updatePhotoStatus();
@@ -571,7 +646,7 @@ function updateImagePreview() {
 
 function updatePdfPreview() {
   const pdfUrl =
-    selectedPdfPreviewUrl || (adminRemovePdfInput?.checked ? "" : currentProjectPdfUrl);
+    selectedPdfPreviewUrl || (removePdfPending ? "" : currentProjectPdfUrl);
 
   if (pdfUrl) {
     modalPdfLink.href = pdfUrl;
@@ -591,9 +666,7 @@ function handlePhotoFileChange() {
   const selectedPhoto = adminPhotoFileInput?.files?.[0];
   if (selectedPhoto) {
     selectedPhotoPreviewUrl = URL.createObjectURL(selectedPhoto);
-    if (adminRemovePhotoInput) {
-      adminRemovePhotoInput.checked = false;
-    }
+    removePhotoPending = false;
   }
 
   updateImagePreview();
@@ -606,32 +679,46 @@ function handlePdfFileChange() {
   const selectedPdf = adminPdfFileInput?.files?.[0];
   if (selectedPdf) {
     selectedPdfPreviewUrl = URL.createObjectURL(selectedPdf);
-    if (adminRemovePdfInput) {
-      adminRemovePdfInput.checked = false;
+    removePdfPending = false;
+  }
+
+  updatePdfPreview();
+}
+
+function handlePhotoActionClick() {
+  if (!adminPhotoFileInput) return;
+
+  if (hasPhotoDocument()) {
+    if (selectedPhotoPreviewUrl) {
+      adminPhotoFileInput.value = "";
+      revokePreviewUrl(selectedPhotoPreviewUrl);
+      selectedPhotoPreviewUrl = "";
+    } else if (currentProjectPhotoUrl) {
+      removePhotoPending = true;
     }
+    updateImagePreview();
+    return;
   }
 
-  updatePdfPreview();
+  adminPhotoFileInput.click();
 }
 
-function handleRemovePhotoToggle() {
-  if (adminRemovePhotoInput?.checked && adminPhotoFileInput) {
-    adminPhotoFileInput.value = "";
-    revokePreviewUrl(selectedPhotoPreviewUrl);
-    selectedPhotoPreviewUrl = "";
+function handlePdfActionClick() {
+  if (!adminPdfFileInput) return;
+
+  if (hasPdfDocument()) {
+    if (selectedPdfPreviewUrl) {
+      adminPdfFileInput.value = "";
+      revokePreviewUrl(selectedPdfPreviewUrl);
+      selectedPdfPreviewUrl = "";
+    } else if (currentProjectPdfUrl) {
+      removePdfPending = true;
+    }
+    updatePdfPreview();
+    return;
   }
 
-  updateImagePreview();
-}
-
-function handleRemovePdfToggle() {
-  if (adminRemovePdfInput?.checked && adminPdfFileInput) {
-    adminPdfFileInput.value = "";
-    revokePreviewUrl(selectedPdfPreviewUrl);
-    selectedPdfPreviewUrl = "";
-  }
-
-  updatePdfPreview();
+  adminPdfFileInput.click();
 }
 
 function openProjectModal(projectId) {
@@ -656,8 +743,8 @@ function openProjectModal(projectId) {
   modalDescription.value = base.description || "";
   adminTeamNamesInput.value = "";
 
-  currentProjectPhotoUrl = getProjectPhotoUrl(base);
-  currentProjectPdfUrl = getProjectPdfUrl(base);
+  currentProjectPhotoUrl = "";
+  currentProjectPdfUrl = "";
 
   updateImagePreview();
   updatePdfPreview();
@@ -668,6 +755,7 @@ function openProjectModal(projectId) {
 
   modalBackdrop.classList.add("is-open");
   modalBackdrop.setAttribute("aria-hidden", "false");
+  syncCurrentProjectDocuments(requestId);
 
   DataStore.loadProjectDetails(projectId)
     .then((details) => {
@@ -676,18 +764,12 @@ function openProjectModal(projectId) {
       modalDescription.value =
         details.fullDescription || details.full_description || base.description || "";
 
-      currentProjectPhotoUrl = getProjectPhotoUrl(details);
-      currentProjectPdfUrl = getProjectPdfUrl(details);
-
       if (adminProtectedInput && typeof details?.protected === "boolean") {
         adminProtectedInput.checked = details.protected;
       }
 
       const detailTeamNames = getProjectTeamNames(details);
       adminTeamNamesInput.value = detailTeamNames.join(", ");
-
-      updateImagePreview();
-      updatePdfPreview();
 
       draftTeamStudents = {};
       syncTeamNamesFromInput();
@@ -734,8 +816,8 @@ async function saveCurrentProject() {
 
   const photoFile = adminPhotoFileInput?.files?.[0] || null;
   const pdfFile = adminPdfFileInput?.files?.[0] || null;
-  const removePhoto = Boolean(adminRemovePhotoInput?.checked);
-  const removePdf = Boolean(adminRemovePdfInput?.checked);
+  const removePhoto = removePhotoPending;
+  const removePdf = removePdfPending;
   const shouldUpdateDocuments = Boolean(
     photoFile || pdfFile || removePhoto || removePdf
   );
@@ -919,12 +1001,12 @@ function init() {
     adminPdfFileInput.addEventListener("change", handlePdfFileChange);
   }
 
-  if (adminRemovePhotoInput) {
-    adminRemovePhotoInput.addEventListener("change", handleRemovePhotoToggle);
+  if (adminPhotoActionButton) {
+    adminPhotoActionButton.addEventListener("click", handlePhotoActionClick);
   }
 
-  if (adminRemovePdfInput) {
-    adminRemovePdfInput.addEventListener("change", handleRemovePdfToggle);
+  if (adminPdfActionButton) {
+    adminPdfActionButton.addEventListener("click", handlePdfActionClick);
   }
 
   if (adminNameInput) {
