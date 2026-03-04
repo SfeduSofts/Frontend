@@ -552,7 +552,6 @@ async function createProject() {
     description: "Введите краткое описание проекта",
     protected: false,
     mentor: "",
-    slug: "slug",
   });
 
   projects.push(newProject);
