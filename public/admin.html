@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
@@ -81,14 +81,23 @@
             >
               Сбросить фильтры
             </button>
-            <button
-              class="reset-filters-button admin-import-button"
-              id="adminImportMp2Button"
-              type="button"
-            >
-              Импорт МП2 из таблицы
-            </button>
-            <div id="adminImportMp2Status" class="admin-import-status"></div>
+            <div class="admin-import-controls">
+              <input
+                id="adminImportSheetUrl"
+                class="search-input admin-import-input"
+                type="url"
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=..."
+                autocomplete="off"
+              />
+              <button
+                class="reset-filters-button admin-import-button"
+                id="adminImportSheetButton"
+                type="button"
+              >
+                Импорт из таблицы
+              </button>
+              <div id="adminImportSheetStatus" class="admin-import-status"></div>
+            </div>
           </div>
         </div>
       </aside>
@@ -276,4 +285,5 @@
     <script src="admin.js"></script>
   </body>
 </html>
+
 

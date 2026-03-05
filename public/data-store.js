@@ -60,6 +60,12 @@
         method: "POST",
       });
     },
+    importProjectsFromSheet(url) {
+      return requestJson("/projects/import/sheet", {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      });
+    },
     loadTeamStudents(teamName, projectId = null) {
       const query =
         projectId == null

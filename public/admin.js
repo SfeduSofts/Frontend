@@ -10,8 +10,9 @@ const cardsContainer = document.getElementById("cardsContainer");
 const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-button");
 const resetFiltersButton = document.getElementById("resetFiltersButton");
-const adminImportMp2Button = document.getElementById("adminImportMp2Button");
-const adminImportMp2Status = document.getElementById("adminImportMp2Status");
+const adminImportSheetButton = document.getElementById("adminImportSheetButton");
+const adminImportSheetUrlInput = document.getElementById("adminImportSheetUrl");
+const adminImportSheetStatus = document.getElementById("adminImportSheetStatus");
 
 const modalBackdrop = document.getElementById("projectModal");
 const modalImage = document.getElementById("projectModalImage");
@@ -460,28 +461,39 @@ function resetFilters() {
 }
 
 function setImportStatus(message, isError = false) {
-  if (!adminImportMp2Status) return;
-  adminImportMp2Status.textContent = message || "";
-  adminImportMp2Status.style.color = isError
+  if (!adminImportSheetStatus) return;
+  adminImportSheetStatus.textContent = message || "";
+  adminImportSheetStatus.style.color = isError
     ? "rgba(255, 189, 189, 0.95)"
     : "rgba(255, 255, 255, 0.85)";
 }
 
-async function handleImportMp2Click() {
-  if (!adminImportMp2Button) return;
+function getImportSheetUrl() {
+  return String(adminImportSheetUrlInput?.value || "").trim();
+}
+
+async function handleImportSheetClick() {
+  if (!adminImportSheetButton) return;
+
+  const sheetUrl = getImportSheetUrl();
+  if (!sheetUrl) {
+    setImportStatus("Введите ссылку на Google-таблицу.", true);
+    alert("Введите ссылку на Google-таблицу.");
+    return;
+  }
 
   const confirmed = window.confirm(
-    "Импортировать МП2 из таблицы? Будут созданы только отсутствующие проекты."
+    "Импортировать проекты из таблицы? Будут созданы только отсутствующие проекты."
   );
   if (!confirmed) return;
 
-  const initialText = adminImportMp2Button.textContent;
-  adminImportMp2Button.disabled = true;
-  adminImportMp2Button.textContent = "Импорт...";
+  const initialText = adminImportSheetButton.textContent;
+  adminImportSheetButton.disabled = true;
+  adminImportSheetButton.textContent = "Импорт...";
   setImportStatus("Импорт данных из Google-таблицы...");
 
   try {
-    const result = await DataStore.importMp2Projects();
+    const result = await DataStore.importProjectsFromSheet(sheetUrl);
     const loadedProjects = await loadProjects();
     projects = loadedProjects || [];
     projectsLoaded = true;
@@ -490,17 +502,22 @@ async function handleImportMp2Click() {
     const created = Number(result?.created || 0);
     const skipped = Number(result?.skipped_existing || 0);
     const errorsCount = Array.isArray(result?.errors) ? result.errors.length : 0;
+    const detectedType = String(result?.detected_type || "").trim() || "не определен";
+    const detectedYear = Number(result?.detected_year || 0);
+    const detectedPart = Number.isFinite(detectedYear) && detectedYear > 0
+      ? `Тип: ${detectedType}, год: ${detectedYear}. `
+      : `Тип: ${detectedType}. `;
 
-    const statusMessage = `Импорт завершен: создано ${created}, пропущено ${skipped}, ошибок ${errorsCount}.`;
+    const statusMessage = `${detectedPart}Импорт завершен: создано ${created}, пропущено ${skipped}, ошибок ${errorsCount}.`;
     setImportStatus(statusMessage, errorsCount > 0);
     alert(statusMessage);
   } catch (error) {
-    console.error("Ошибка импорта МП2:", error);
-    setImportStatus("Ошибка импорта. Проверьте доступность таблицы и API.", true);
-    alert("Не удалось выполнить импорт МП2.");
+    console.error("Ошибка импорта из таблицы:", error);
+    setImportStatus("Ошибка импорта. Проверьте ссылку на таблицу и доступность API.", true);
+    alert("Не удалось выполнить импорт из таблицы.");
   } finally {
-    adminImportMp2Button.disabled = false;
-    adminImportMp2Button.textContent = initialText;
+    adminImportSheetButton.disabled = false;
+    adminImportSheetButton.textContent = initialText;
   }
 }
 
@@ -1003,8 +1020,17 @@ function init() {
     resetFiltersButton.addEventListener("click", resetFilters);
   }
 
-  if (adminImportMp2Button) {
-    adminImportMp2Button.addEventListener("click", handleImportMp2Click);
+  if (adminImportSheetButton) {
+    adminImportSheetButton.addEventListener("click", handleImportSheetClick);
+  }
+
+  if (adminImportSheetUrlInput) {
+    adminImportSheetUrlInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleImportSheetClick();
+      }
+    });
   }
 
   if (modalBackdrop) {
