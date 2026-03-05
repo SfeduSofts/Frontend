@@ -1,3 +1,7 @@
+.project-modal__content {
+  align-items: stretch;
+}
+
 .admin-field-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -116,10 +120,36 @@
 }
 
 .admin-modal-actions {
-  margin-top: 16px;
   display: flex;
+  width: 100%;
+  flex: 0 0 auto;
   justify-content: flex-end;
   gap: 10px;
+  padding: 12px 24px 18px;
+  border-top: 1px solid rgba(33, 62, 137, 0.12);
+  background-color: #ffffff;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 720px) {
+  .admin-modal-actions {
+    padding: 10px 16px 14px;
+  }
+}
+
+.admin-modal-actions .admin-button {
+  margin-top: 0;
+}
+
+.admin-button--delete {
+  margin-right: auto;
+}
+
+.admin-button--save,
+.admin-button--cancel,
+.admin-button--delete {
+  white-space: nowrap;
 }
 
 .admin-button {
@@ -141,7 +171,6 @@
 }
 
 .admin-button--delete {
-  margin-right: auto;
   border-color: rgba(184, 33, 33, 0.35);
   background-color: rgba(184, 33, 33, 0.06);
   color: #b82121;

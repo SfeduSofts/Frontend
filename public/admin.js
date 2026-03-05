@@ -57,6 +57,7 @@ let selectedPhotoPreviewUrl = "";
 let selectedPdfPreviewUrl = "";
 let removePhotoPending = false;
 let removePdfPending = false;
+let closeOnBackdropPointerUp = false;
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -629,7 +630,12 @@ async function createProject() {
   return newProject.id;
 }
 
-async function handleAddProjectClick() {
+async function handleAddProjectClick(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   resetFiltersForNewProject();
   try {
     const newProjectId = await createProject();
@@ -644,7 +650,7 @@ async function handleAddProjectClick() {
 function bindAddProjectButton() {
   const button = document.getElementById("adminAddProjectButton");
   if (!button) return;
-  button.onclick = handleAddProjectClick;
+  button.addEventListener("click", handleAddProjectClick);
 }
 
 function resetFiltersForNewProject() {
@@ -1034,9 +1040,31 @@ function init() {
   }
 
   if (modalBackdrop) {
+    modalBackdrop.addEventListener("pointerdown", (event) => {
+      closeOnBackdropPointerUp =
+        event.button === 0 && event.target === modalBackdrop;
+    });
+
+    modalBackdrop.addEventListener("pointerup", (event) => {
+      const shouldClose =
+        closeOnBackdropPointerUp &&
+        event.button === 0 &&
+        event.target === modalBackdrop;
+      closeOnBackdropPointerUp = false;
+
+      if (shouldClose) {
+        closeProjectModal();
+      }
+    });
+
+    modalBackdrop.addEventListener("pointercancel", () => {
+      closeOnBackdropPointerUp = false;
+    });
+
     modalBackdrop.addEventListener("click", (event) => {
       if (event.target === modalBackdrop) {
-        closeProjectModal();
+        // Prevent default click-closing path; closing is controlled by pointerdown+pointerup on backdrop.
+        event.preventDefault();
       }
     });
   }
