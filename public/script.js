@@ -1,4 +1,4 @@
-let projects = [];
+﻿let projects = [];
 let projectsLoaded = false;
 
 const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
@@ -40,8 +40,8 @@ function loadProjectDetails(projectId) {
   return DataStore.loadProjectDetails(projectId);
 }
 
-function loadTeamStudents(teamName) {
-  return DataStore.loadTeamStudents(teamName).catch(() => []);
+function loadTeamStudents(teamName, projectId = null) {
+  return DataStore.loadTeamStudents(teamName, projectId).catch(() => []);
 }
 
 function getProjectTeamNames(payload) {
@@ -64,10 +64,6 @@ function getProjectPdfUrl(payload, projectId) {
     payload?.pdfSrc ||
     `${PROJECT_FILES_BASE_URL}/${projectId}/pdf`
   );
-}
-
-function getStudentPhotoUrl(student) {
-  return student?.photoUrl || student?.photo_src || student?.photoSrc || "";
 }
 
 async function checkPdfExists(url) {
@@ -222,46 +218,36 @@ function renderTeamStudents(groups) {
   const items = [];
 
   groups.forEach(({ teamName, students }) => {
-    items.push(
-      `<li class="project-modal__team-group-title">Команда: ${escapeHtml(
-        teamName
-      )}</li>`
-    );
+    const studentsHtml =
+      Array.isArray(students) && students.length > 0
+        ? `<ul class="project-modal__team-members">
+            ${students
+              .map(
+                (student) => `
+                  <li class="project-modal__student">
+                    <div class="project-modal__student-info">
+                      <div class="project-modal__student-name">${escapeHtml(
+                        student.name || "Без имени"
+                      )}</div>
+                      <div class="project-modal__student-role">${escapeHtml(
+                        student.role || ""
+                      )}</div>
+                    </div>
+                  </li>
+                `
+              )
+              .join("")}
+          </ul>`
+        : '<div class="project-modal__team-empty">Нет данных по студентам.</div>';
 
-    if (Array.isArray(students) && students.length > 0) {
-      students.forEach((student) => {
-        const initial =
-          (student.name && student.name.trim().charAt(0).toUpperCase()) || "?";
-
-        items.push(`
-          <li class="project-modal__student">
-            <div class="project-modal__student-photo-wrapper">
-              ${
-                getStudentPhotoUrl(student)
-                  ? `<img src="${escapeHtml(
-                      getStudentPhotoUrl(student)
-                    )}" alt="${escapeHtml(
-                      student.name
-                    )}" class="project-modal__student-photo">`
-                  : `<div class="project-modal__student-placeholder">${initial}</div>`
-              }
-            </div>
-            <div class="project-modal__student-info">
-              <div class="project-modal__student-name">${escapeHtml(
-                student.name
-              )}</div>
-              <div class="project-modal__student-role">${escapeHtml(
-                student.role
-              )}</div>
-            </div>
-          </li>
-        `);
-      });
-    } else {
-      items.push(
-        '<li class="project-modal__student project-modal__student--empty">Нет данных по студентам.</li>'
-      );
-    }
+    items.push(`
+      <li class="project-modal__team-group">
+        <div class="project-modal__team-group-title">Команда: ${escapeHtml(
+          teamName
+        )}</div>
+        ${studentsHtml}
+      </li>
+    `);
   });
 
   modalStudentsList.innerHTML = items.join("");
@@ -350,6 +336,10 @@ function openProjectModal(projectId) {
       }
 
       const imageUrl = `${PROJECT_FILES_BASE_URL}/${projectId}/image`;
+      modalImage.onerror = () => {
+        modalImage.onerror = null;
+        modalImage.src = DEFAULT_PROJECT_IMAGE_URL;
+      };
       modalImage.src = imageUrl || DEFAULT_PROJECT_IMAGE_URL;
       modalImage.alt = combined.name || "Изображение проекта";
 
@@ -376,7 +366,7 @@ function openProjectModal(projectId) {
 
         Promise.all(
           teamNames.map((teamName) =>
-            loadTeamStudents(teamName).then((students) => ({
+            loadTeamStudents(teamName, projectId).then((students) => ({
               teamName,
               students,
             }))
@@ -453,3 +443,4 @@ function init() {
 }
 
 init();
+

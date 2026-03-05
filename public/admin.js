@@ -10,6 +10,8 @@ const cardsContainer = document.getElementById("cardsContainer");
 const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-button");
 const resetFiltersButton = document.getElementById("resetFiltersButton");
+const adminImportMp2Button = document.getElementById("adminImportMp2Button");
+const adminImportMp2Status = document.getElementById("adminImportMp2Status");
 
 const modalBackdrop = document.getElementById("projectModal");
 const modalImage = document.getElementById("projectModalImage");
@@ -56,6 +58,19 @@ let removePhotoPending = false;
 let removePdfPending = false;
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
+
+function stripStudentPhotoFields(student) {
+  if (!student || typeof student !== "object") {
+    return { name: "", role: "" };
+  }
+
+  const normalized = { ...student };
+  delete normalized.photoUrl;
+  delete normalized.photo_src;
+  delete normalized.photoSrc;
+
+  return normalized;
+}
 
 const escapeHtml = (value) =>
   String(value ?? "")
@@ -245,8 +260,8 @@ function loadProjects() {
   return DataStore.loadProjects();
 }
 
-function loadTeamStudents(teamName) {
-  return DataStore.loadTeamStudents(teamName)
+function loadTeamStudents(teamName, projectId = null) {
+  return DataStore.loadTeamStudents(teamName, projectId)
     .then((students) => deepClone(students || []))
     .catch(() => []);
 }
@@ -260,7 +275,7 @@ function getDisplayYears(project) {
 
   if (isProjectTypeMp2(project.type)) {
     const endYear = startYear + 1;
-    return `${startYear}вЂ“${endYear}`;
+    return `${startYear}–${endYear}`;
   }
 
   return String(startYear);
@@ -273,7 +288,7 @@ function parseYearRangeLabel(label) {
   if (!raw) return null;
 
   const parts = raw
-    .split(/[-вЂ“]/)
+    .split(/[-–]/)
     .map((s) => s.trim())
     .filter(Boolean);
 
@@ -444,6 +459,51 @@ function resetFilters() {
   renderProjects();
 }
 
+function setImportStatus(message, isError = false) {
+  if (!adminImportMp2Status) return;
+  adminImportMp2Status.textContent = message || "";
+  adminImportMp2Status.style.color = isError
+    ? "rgba(255, 189, 189, 0.95)"
+    : "rgba(255, 255, 255, 0.85)";
+}
+
+async function handleImportMp2Click() {
+  if (!adminImportMp2Button) return;
+
+  const confirmed = window.confirm(
+    "Импортировать МП2 из таблицы? Будут созданы только отсутствующие проекты."
+  );
+  if (!confirmed) return;
+
+  const initialText = adminImportMp2Button.textContent;
+  adminImportMp2Button.disabled = true;
+  adminImportMp2Button.textContent = "Импорт...";
+  setImportStatus("Импорт данных из Google-таблицы...");
+
+  try {
+    const result = await DataStore.importMp2Projects();
+    const loadedProjects = await loadProjects();
+    projects = loadedProjects || [];
+    projectsLoaded = true;
+    renderProjects();
+
+    const created = Number(result?.created || 0);
+    const skipped = Number(result?.skipped_existing || 0);
+    const errorsCount = Array.isArray(result?.errors) ? result.errors.length : 0;
+
+    const statusMessage = `Импорт завершен: создано ${created}, пропущено ${skipped}, ошибок ${errorsCount}.`;
+    setImportStatus(statusMessage, errorsCount > 0);
+    alert(statusMessage);
+  } catch (error) {
+    console.error("Ошибка импорта МП2:", error);
+    setImportStatus("Ошибка импорта. Проверьте доступность таблицы и API.", true);
+    alert("Не удалось выполнить импорт МП2.");
+  } finally {
+    adminImportMp2Button.disabled = false;
+    adminImportMp2Button.textContent = initialText;
+  }
+}
+
 function renderTeamStudentsPlaceholder(message) {
   if (!modalStudentsList) return;
 
@@ -501,13 +561,6 @@ function renderTeamStudentsEditor() {
             type="text"
             placeholder="Роль"
             value="${escapeHtml(student.role)}"
-          />
-          <input
-            class="admin-input admin-student-input"
-            data-field="photoUrl"
-            type="text"
-            placeholder="Фото URL"
-            value="${escapeHtml(student.photoUrl)}"
           />
           <button
             class="admin-small-button"
@@ -618,7 +671,7 @@ function loadTeamsData(teamNames, requestId) {
         });
       }
 
-      return loadTeamStudents(teamName).then((students) => ({
+      return loadTeamStudents(teamName, currentProjectId).then((students) => ({
         teamName,
         students,
       }));
@@ -628,7 +681,9 @@ function loadTeamsData(teamNames, requestId) {
 
     draftTeamStudents = {};
     groups.forEach(({ teamName, students }) => {
-      draftTeamStudents[teamName] = deepClone(students);
+      draftTeamStudents[teamName] = (students || []).map((student) =>
+        stripStudentPhotoFields(student)
+      );
     });
 
     renderTeamStudentsEditor();
@@ -837,10 +892,14 @@ async function saveCurrentProject() {
       });
     }
 
+    await DataStore.updateProjectTeams(currentProjectId, currentTeamNames);
+
     await Promise.all(
       currentTeamNames.map((teamName) => {
-        const students = draftTeamStudents[teamName] || [];
-        return DataStore.updateTeamStudents(teamName, students);
+        const students = (draftTeamStudents[teamName] || []).map((student) =>
+          stripStudentPhotoFields(student)
+        );
+        return DataStore.updateTeamStudents(teamName, students, currentProjectId);
       })
     );
 
@@ -893,7 +952,6 @@ function handleStudentListClick(event) {
     draftTeamStudents[teamName].push({
       name: "",
       role: "",
-      photoUrl: "",
     });
     renderTeamStudentsEditor();
   }
@@ -943,6 +1001,10 @@ function init() {
 
   if (resetFiltersButton) {
     resetFiltersButton.addEventListener("click", resetFilters);
+  }
+
+  if (adminImportMp2Button) {
+    adminImportMp2Button.addEventListener("click", handleImportMp2Click);
   }
 
   if (modalBackdrop) {

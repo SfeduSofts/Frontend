@@ -55,8 +55,17 @@
     loadProjectDetails(projectId) {
       return requestJson(`/projects/${projectId}`);
     },
-    loadTeamStudents(teamName) {
-      return requestJson(`/teams/${encodeURIComponent(teamName)}/students`);
+    importMp2Projects() {
+      return requestJson("/projects/import/mp2", {
+        method: "POST",
+      });
+    },
+    loadTeamStudents(teamName, projectId = null) {
+      const query =
+        projectId == null
+          ? ""
+          : `?project_id=${encodeURIComponent(String(projectId))}`;
+      return requestJson(`/teams/${encodeURIComponent(teamName)}/students${query}`);
     },
     createProject(payload) {
       return requestJson("/projects", {
@@ -79,6 +88,12 @@
       return requestJson(`/projects/${projectId}/details`, {
         method: "PUT",
         body: JSON.stringify(payload),
+      });
+    },
+    updateProjectTeams(projectId, teamNames) {
+      return requestJson(`/teams/${projectId}/teams`, {
+        method: "PUT",
+        body: JSON.stringify({ teamNames }),
       });
     },
     updateProjectDocuments(projectId, payload) {
@@ -132,8 +147,12 @@
 
       return Promise.all(tasks);
     },
-    updateTeamStudents(teamName, students) {
-      return requestJson(`/teams/${encodeURIComponent(teamName)}/students`, {
+    updateTeamStudents(teamName, students, projectId = null) {
+      const query =
+        projectId == null
+          ? ""
+          : `?project_id=${encodeURIComponent(String(projectId))}`;
+      return requestJson(`/teams/${encodeURIComponent(teamName)}/students${query}`, {
         method: "PUT",
         body: JSON.stringify({ students }),
       });
