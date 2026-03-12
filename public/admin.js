@@ -10,6 +10,7 @@ const cardsContainer = document.getElementById("cardsContainer");
 const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-button");
 const resetFiltersButton = document.getElementById("resetFiltersButton");
+const adminBulkDeleteButton = document.getElementById("adminBulkDeleteButton");
 const adminImportSheetButton = document.getElementById("adminImportSheetButton");
 const adminImportSheetUrlInput = document.getElementById("adminImportSheetUrl");
 const adminImportSheetStatus = document.getElementById("adminImportSheetStatus");
@@ -58,6 +59,7 @@ let selectedPdfPreviewUrl = "";
 let removePhotoPending = false;
 let removePdfPending = false;
 let closeOnBackdropPointerUp = false;
+let selectedProjectIds = new Set();
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -310,7 +312,63 @@ function parseYearRangeLabel(label) {
   return null;
 }
 
+function syncSelectedProjectsWithCurrentList() {
+  if (selectedProjectIds.size === 0) return;
+
+  const existingIds = new Set(
+    projects
+      .map((project) => Number(project.id))
+      .filter((projectId) => Number.isFinite(projectId))
+  );
+
+  selectedProjectIds = new Set(
+    Array.from(selectedProjectIds).filter((projectId) => existingIds.has(projectId))
+  );
+}
+
+function updateBulkSelectionUI() {
+  const selectedCount = selectedProjectIds.size;
+  const hasSelection = selectedCount > 0;
+
+  if (adminBulkDeleteButton) {
+    adminBulkDeleteButton.disabled = !hasSelection;
+    adminBulkDeleteButton.classList.toggle("admin-hidden", !hasSelection);
+    adminBulkDeleteButton.textContent =
+      hasSelection
+        ? `Удалить выбранные (${selectedCount})`
+        : "Удалить выбранные";
+  }
+
+  if (adminImportSheetUrlInput) {
+    adminImportSheetUrlInput.classList.toggle("admin-hidden", hasSelection);
+  }
+
+  if (adminImportSheetButton) {
+    adminImportSheetButton.classList.toggle("admin-hidden", hasSelection);
+  }
+
+  if (adminImportSheetStatus) {
+    adminImportSheetStatus.classList.toggle("admin-hidden", hasSelection);
+  }
+}
+
+function selectAllVisibleProjects() {
+  if (!projectsLoaded) return;
+
+  const visibleProjectIds = Array.from(
+    cardsContainer.querySelectorAll(".project-card[data-project-id]")
+  )
+    .map((card) => Number(card.dataset.projectId))
+    .filter((projectId) => Number.isFinite(projectId));
+
+  selectedProjectIds = new Set(visibleProjectIds);
+  renderProjects();
+}
+
 function renderProjects() {
+  syncSelectedProjectsWithCurrentList();
+  updateBulkSelectionUI();
+
   if (!projectsLoaded) {
     cardsContainer.innerHTML =
       '<article class="project-card">' +
@@ -378,9 +436,13 @@ function renderProjects() {
           "</div>"
         : "";
 
+      const selectedClass = selectedProjectIds.has(Number(project.id))
+        ? " admin-project-card--selected"
+        : "";
+
       return `
         <article 
-          class="project-card" 
+          class="project-card${selectedClass}" 
           data-project-id="${project.id}" 
           data-project-type="${project.type}"
         >
@@ -412,7 +474,20 @@ function attachCardClickHandlers() {
     const projectId = Number(card.dataset.projectId);
     if (!projectId) return;
 
-    card.addEventListener("click", () => {
+    card.addEventListener("click", (event) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+
+        if (selectedProjectIds.has(projectId)) {
+          selectedProjectIds.delete(projectId);
+        } else {
+          selectedProjectIds.add(projectId);
+        }
+
+        renderProjects();
+        return;
+      }
+
       openProjectModal(projectId);
     });
   });
@@ -959,6 +1034,59 @@ async function deleteCurrentProject() {
   }
 }
 
+async function handleBulkDeleteClick() {
+  if (selectedProjectIds.size === 0) return;
+
+  const selectedIds = Array.from(selectedProjectIds);
+  const selectedCount = selectedIds.length;
+
+  const confirmed = window.confirm(
+    `Удалить выбранные проекты (${selectedCount})? Это действие необратимо.`
+  );
+  if (!confirmed) return;
+
+  const initialText = adminBulkDeleteButton?.textContent || "Удалить выбранные";
+  if (adminBulkDeleteButton) {
+    adminBulkDeleteButton.disabled = true;
+    adminBulkDeleteButton.textContent = "Удаление...";
+  }
+
+  const deletedIds = new Set();
+  const errors = [];
+
+  for (const projectId of selectedIds) {
+    try {
+      await DataStore.deleteProject(projectId);
+      deletedIds.add(projectId);
+    } catch (error) {
+      errors.push({ projectId, error });
+      console.error(`Ошибка удаления проекта ${projectId}:`, error);
+    }
+  }
+
+  if (deletedIds.size > 0) {
+    projects = projects.filter((project) => !deletedIds.has(Number(project.id)));
+
+    if (currentProjectId != null && deletedIds.has(Number(currentProjectId))) {
+      closeProjectModal();
+    }
+  }
+
+  selectedProjectIds = new Set(
+    Array.from(selectedProjectIds).filter((projectId) => !deletedIds.has(projectId))
+  );
+
+  renderProjects();
+
+  const statusMessage = `Массовое удаление завершено: удалено ${deletedIds.size} из ${selectedCount}, ошибок ${errors.length}.`;
+  alert(statusMessage);
+
+  if (adminBulkDeleteButton) {
+    adminBulkDeleteButton.textContent = initialText;
+    updateBulkSelectionUI();
+  }
+}
+
 function handleStudentListClick(event) {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
@@ -1026,6 +1154,10 @@ function init() {
     resetFiltersButton.addEventListener("click", resetFilters);
   }
 
+  if (adminBulkDeleteButton) {
+    adminBulkDeleteButton.addEventListener("click", handleBulkDeleteClick);
+  }
+
   if (adminImportSheetButton) {
     adminImportSheetButton.addEventListener("click", handleImportSheetClick);
   }
@@ -1070,6 +1202,17 @@ function init() {
   }
 
   document.addEventListener("keydown", (event) => {
+    if (
+      event.ctrlKey &&
+      event.shiftKey &&
+      !event.altKey &&
+      String(event.key || "").toLowerCase() === "a"
+    ) {
+      event.preventDefault();
+      selectAllVisibleProjects();
+      return;
+    }
+
     if (event.key === "Escape") {
       closeProjectModal();
     }
@@ -1151,6 +1294,7 @@ function init() {
         '<p class="project-description">Проверьте доступность API и обновите страницу.</p>' +
         "</article>";
       bindAddProjectButton();
+      updateBulkSelectionUI();
     });
 }
 
