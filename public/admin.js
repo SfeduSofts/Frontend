@@ -11,9 +11,13 @@ const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-button");
 const resetFiltersButton = document.getElementById("resetFiltersButton");
 const adminBulkDeleteButton = document.getElementById("adminBulkDeleteButton");
-const adminImportSheetButton = document.getElementById("adminImportSheetButton");
+const adminImportSheetButton = document.getElementById(
+  "adminImportSheetButton",
+);
 const adminImportSheetUrlInput = document.getElementById("adminImportSheetUrl");
-const adminImportSheetStatus = document.getElementById("adminImportSheetStatus");
+const adminImportSheetStatus = document.getElementById(
+  "adminImportSheetStatus",
+);
 
 const modalBackdrop = document.getElementById("projectModal");
 const modalImage = document.getElementById("projectModalImage");
@@ -26,16 +30,17 @@ const adminTypeInput = document.getElementById("adminProjectType");
 const adminYearInput = document.getElementById("adminProjectYear");
 const adminMentorInput = document.getElementById("adminProjectMentor");
 const adminShortDescriptionInput = document.getElementById(
-  "adminProjectShortDescription"
+  "adminProjectShortDescription",
 );
-const adminProtectedInput = document.getElementById("adminProjectProtected");
 const adminPhotoFileInput = document.getElementById("adminProjectPhotoFile");
 const adminPdfFileInput = document.getElementById("adminProjectPdfFile");
 const adminPhotoStatus = document.getElementById("adminProjectPhotoStatus");
 const adminPdfStatus =
   document.getElementById("adminProjectPDFStatus") ||
   document.getElementById("adminProjectPdfStatus");
-const adminPhotoActionButton = document.getElementById("adminProjectPhotoAction");
+const adminPhotoActionButton = document.getElementById(
+  "adminProjectPhotoAction",
+);
 const adminPdfActionButton = document.getElementById("adminProjectPdfAction");
 const adminTeamNamesInput = document.getElementById("adminProjectTeamNames");
 const adminSaveButton = document.getElementById("adminSaveButton");
@@ -85,7 +90,9 @@ const escapeHtml = (value) =>
     .replace(/'/g, "&#39;");
 
 function normalizeProjectType(type) {
-  const raw = String(type || "").trim().toUpperCase();
+  const raw = String(type || "")
+    .trim()
+    .toUpperCase();
   if (raw === "MP2" || raw.endsWith("2")) {
     return PROJECT_TYPE_MP2;
   }
@@ -125,10 +132,6 @@ async function checkFileExists(url) {
   } catch (_) {
     return false;
   }
-}
-
-function getProjectProtected(payload) {
-  return Boolean(payload?.protected);
 }
 
 function getProjectTeamNames(payload) {
@@ -318,11 +321,13 @@ function syncSelectedProjectsWithCurrentList() {
   const existingIds = new Set(
     projects
       .map((project) => Number(project.id))
-      .filter((projectId) => Number.isFinite(projectId))
+      .filter((projectId) => Number.isFinite(projectId)),
   );
 
   selectedProjectIds = new Set(
-    Array.from(selectedProjectIds).filter((projectId) => existingIds.has(projectId))
+    Array.from(selectedProjectIds).filter((projectId) =>
+      existingIds.has(projectId),
+    ),
   );
 }
 
@@ -333,10 +338,9 @@ function updateBulkSelectionUI() {
   if (adminBulkDeleteButton) {
     adminBulkDeleteButton.disabled = !hasSelection;
     adminBulkDeleteButton.classList.toggle("admin-hidden", !hasSelection);
-    adminBulkDeleteButton.textContent =
-      hasSelection
-        ? `Удалить выбранные (${selectedCount})`
-        : "Удалить выбранные";
+    adminBulkDeleteButton.textContent = hasSelection
+      ? `Удалить выбранные (${selectedCount})`
+      : "Удалить выбранные";
   }
 
   if (adminImportSheetUrlInput) {
@@ -356,7 +360,7 @@ function selectAllVisibleProjects() {
   if (!projectsLoaded) return;
 
   const visibleProjectIds = Array.from(
-    cardsContainer.querySelectorAll(".project-card[data-project-id]")
+    cardsContainer.querySelectorAll(".project-card[data-project-id]"),
   )
     .map((card) => Number(card.dataset.projectId))
     .filter((projectId) => Number.isFinite(projectId));
@@ -430,17 +434,17 @@ function renderProjects() {
     addCardHtml +
     filtered
       .map((project) => {
-      const mentorHtml = project.mentor
-        ? '<div class="project-meta project-mentor">Наставник: ' +
-          escapeHtml(project.mentor) +
-          "</div>"
-        : "";
+        const mentorHtml = project.mentor
+          ? '<div class="project-meta project-mentor">Наставник: ' +
+            escapeHtml(project.mentor) +
+            "</div>"
+          : "";
 
-      const selectedClass = selectedProjectIds.has(Number(project.id))
-        ? " admin-project-card--selected"
-        : "";
+        const selectedClass = selectedProjectIds.has(Number(project.id))
+          ? " admin-project-card--selected"
+          : "";
 
-      return `
+        return `
         <article 
           class="project-card${selectedClass}" 
           data-project-id="${project.id}" 
@@ -454,7 +458,7 @@ function renderProjects() {
             </div>
             ${mentorHtml}
             <p class="project-description">${escapeHtml(
-              project.description
+              project.description,
             )}</p>
         </article>
     `;
@@ -559,7 +563,7 @@ async function handleImportSheetClick() {
   }
 
   const confirmed = window.confirm(
-    "Импортировать проекты из таблицы? Будут созданы только отсутствующие проекты."
+    "Импортировать проекты из таблицы? Будут созданы только отсутствующие проекты.",
   );
   if (!confirmed) return;
 
@@ -577,19 +581,26 @@ async function handleImportSheetClick() {
 
     const created = Number(result?.created || 0);
     const skipped = Number(result?.skipped_existing || 0);
-    const errorsCount = Array.isArray(result?.errors) ? result.errors.length : 0;
-    const detectedType = String(result?.detected_type || "").trim() || "не определен";
+    const errorsCount = Array.isArray(result?.errors)
+      ? result.errors.length
+      : 0;
+    const detectedType =
+      String(result?.detected_type || "").trim() || "не определен";
     const detectedYear = Number(result?.detected_year || 0);
-    const detectedPart = Number.isFinite(detectedYear) && detectedYear > 0
-      ? `Тип: ${detectedType}, год: ${detectedYear}. `
-      : `Тип: ${detectedType}. `;
+    const detectedPart =
+      Number.isFinite(detectedYear) && detectedYear > 0
+        ? `Тип: ${detectedType}, год: ${detectedYear}. `
+        : `Тип: ${detectedType}. `;
 
     const statusMessage = `${detectedPart}Импорт завершен: создано ${created}, пропущено ${skipped}, ошибок ${errorsCount}.`;
     setImportStatus(statusMessage, errorsCount > 0);
     alert(statusMessage);
   } catch (error) {
     console.error("Ошибка импорта из таблицы:", error);
-    setImportStatus("Ошибка импорта. Проверьте ссылку на таблицу и доступность API.", true);
+    setImportStatus(
+      "Ошибка импорта. Проверьте ссылку на таблицу и доступность API.",
+      true,
+    );
     alert("Не удалось выполнить импорт из таблицы.");
   } finally {
     adminImportSheetButton.disabled = false;
@@ -633,7 +644,7 @@ function renderTeamStudentsEditor() {
 
     if (students.length === 0) {
       items.push(
-        '<li class="project-modal__student project-modal__student--empty">Нет данных по студентам.</li>'
+        '<li class="project-modal__student project-modal__student--empty">Нет данных по студентам.</li>',
       );
       return;
     }
@@ -645,7 +656,7 @@ function renderTeamStudentsEditor() {
             class="admin-input admin-student-input"
             data-field="name"
             type="text"
-            placeholder="Имя"
+            placeholder="ФИО"
             value="${escapeHtml(student.name)}"
           />
           <input
@@ -692,7 +703,7 @@ async function createProject() {
   const defaultYear = getDefaultYearFromFilters();
 
   const newProject = await DataStore.createProject({
-    name: "Новый проект",
+    name: "Тема проекта",
     type: defaultType,
     year: defaultYear || 2016,
     description: "Введите краткое описание проекта",
@@ -773,14 +784,14 @@ function loadTeamsData(teamNames, requestId) {
         teamName,
         students,
       }));
-    })
+    }),
   ).then((groups) => {
     if (requestId !== activeModalRequestId) return;
 
     draftTeamStudents = {};
     groups.forEach(({ teamName, students }) => {
       draftTeamStudents[teamName] = (students || []).map((student) =>
-        stripStudentPhotoFields(student)
+        stripStudentPhotoFields(student),
       );
     });
 
@@ -790,7 +801,8 @@ function loadTeamsData(teamNames, requestId) {
 
 function updateImagePreview() {
   const imageUrl =
-    selectedPhotoPreviewUrl || (removePhotoPending ? "" : currentProjectPhotoUrl);
+    selectedPhotoPreviewUrl ||
+    (removePhotoPending ? "" : currentProjectPhotoUrl);
   modalImage.src = imageUrl || DEFAULT_PROJECT_IMAGE_URL;
   modalImage.alt = adminNameInput.value.trim() || "Изображение проекта";
   updatePhotoStatus();
@@ -888,9 +900,6 @@ function openProjectModal(projectId) {
   adminYearInput.value = base.year ?? "";
   adminMentorInput.value = base.mentor || "";
   adminShortDescriptionInput.value = base.description || "";
-  if (adminProtectedInput) {
-    adminProtectedInput.checked = getProjectProtected(base);
-  }
 
   modalDescription.value = base.description || "";
   adminTeamNamesInput.value = "";
@@ -914,11 +923,10 @@ function openProjectModal(projectId) {
       if (requestId !== activeModalRequestId) return;
 
       modalDescription.value =
-        details.fullDescription || details.full_description || base.description || "";
-
-      if (adminProtectedInput && typeof details?.protected === "boolean") {
-        adminProtectedInput.checked = details.protected;
-      }
+        details.fullDescription ||
+        details.full_description ||
+        base.description ||
+        "";
 
       const detailTeamNames = getProjectTeamNames(details);
       adminTeamNamesInput.value = detailTeamNames.join(", ");
@@ -946,7 +954,7 @@ async function saveCurrentProject() {
   if (currentProjectId == null) return;
 
   const projectIndex = projects.findIndex(
-    (item) => item.id === currentProjectId
+    (item) => item.id === currentProjectId,
   );
   if (projectIndex === -1) return;
 
@@ -959,7 +967,6 @@ async function saveCurrentProject() {
     ...projects[projectIndex],
     name: adminNameInput.value.trim() || "Без названия",
     type: normalizeProjectType(adminTypeInput.value),
-    protected: Boolean(adminProtectedInput?.checked),
     year: normalizedYear,
     description: adminShortDescriptionInput.value.trim(),
     mentor: adminMentorInput.value.trim(),
@@ -971,13 +978,13 @@ async function saveCurrentProject() {
   const removePhoto = removePhotoPending;
   const removePdf = removePdfPending;
   const shouldUpdateDocuments = Boolean(
-    photoFile || pdfFile || removePhoto || removePdf
+    photoFile || pdfFile || removePhoto || removePdf,
   );
 
   try {
     const savedProject = await DataStore.updateProject(
       currentProjectId,
-      updatedProject
+      updatedProject,
     );
     projects[projectIndex] = savedProject || updatedProject;
 
@@ -995,10 +1002,14 @@ async function saveCurrentProject() {
     await Promise.all(
       currentTeamNames.map((teamName) => {
         const students = (draftTeamStudents[teamName] || []).map((student) =>
-          stripStudentPhotoFields(student)
+          stripStudentPhotoFields(student),
         );
-        return DataStore.updateTeamStudents(teamName, students, currentProjectId);
-      })
+        return DataStore.updateTeamStudents(
+          teamName,
+          students,
+          currentProjectId,
+        );
+      }),
     );
 
     closeProjectModal();
@@ -1016,7 +1027,7 @@ async function deleteCurrentProject() {
   const projectName = projectToDelete?.name?.trim() || "этот проект";
 
   const isConfirmed = window.confirm(
-    `Удалить проект "${projectName}"? Это действие необратимо.`
+    `Удалить проект "${projectName}"? Это действие необратимо.`,
   );
 
   if (!isConfirmed) return;
@@ -1041,7 +1052,7 @@ async function handleBulkDeleteClick() {
   const selectedCount = selectedIds.length;
 
   const confirmed = window.confirm(
-    `Удалить выбранные проекты (${selectedCount})? Это действие необратимо.`
+    `Удалить выбранные проекты (${selectedCount})? Это действие необратимо.`,
   );
   if (!confirmed) return;
 
@@ -1065,7 +1076,9 @@ async function handleBulkDeleteClick() {
   }
 
   if (deletedIds.size > 0) {
-    projects = projects.filter((project) => !deletedIds.has(Number(project.id)));
+    projects = projects.filter(
+      (project) => !deletedIds.has(Number(project.id)),
+    );
 
     if (currentProjectId != null && deletedIds.has(Number(currentProjectId))) {
       closeProjectModal();
@@ -1073,7 +1086,9 @@ async function handleBulkDeleteClick() {
   }
 
   selectedProjectIds = new Set(
-    Array.from(selectedProjectIds).filter((projectId) => !deletedIds.has(projectId))
+    Array.from(selectedProjectIds).filter(
+      (projectId) => !deletedIds.has(projectId),
+    ),
   );
 
   renderProjects();
@@ -1204,8 +1219,8 @@ function init() {
   document.addEventListener("keydown", (event) => {
     if (
       event.ctrlKey &&
-      event.shiftKey &&
-      !event.altKey &&
+      !event.shiftKey &&
+      event.altKey &&
       String(event.key || "").toLowerCase() === "a"
     ) {
       event.preventDefault();
@@ -1230,25 +1245,24 @@ function init() {
     adminDeleteButton.addEventListener("click", deleteCurrentProject);
   }
 
-
   if (modalStudentsList) {
     modalStudentsList.addEventListener("click", handleStudentListClick);
     modalStudentsList.addEventListener("input", handleStudentInput);
   }
 
   if (adminTeamNamesInput) {
-  adminTeamNamesInput.addEventListener("change", () => {
-    const nextTeamNames = normalizeTeamNames(adminTeamNamesInput.value);
-    const sameNames =
-      nextTeamNames.length === currentTeamNames.length &&
-      nextTeamNames.every((name, index) => name === currentTeamNames[index]);
+    adminTeamNamesInput.addEventListener("change", () => {
+      const nextTeamNames = normalizeTeamNames(adminTeamNamesInput.value);
+      const sameNames =
+        nextTeamNames.length === currentTeamNames.length &&
+        nextTeamNames.every((name, index) => name === currentTeamNames[index]);
 
-    if (sameNames) return;
+      if (sameNames) return;
 
-    currentTeamNames = nextTeamNames;
-    const requestId = (activeModalRequestId += 1);
-    loadTeamsData(currentTeamNames, requestId);
-  });
+      currentTeamNames = nextTeamNames;
+      const requestId = (activeModalRequestId += 1);
+      loadTeamsData(currentTeamNames, requestId);
+    });
   }
 
   if (adminPhotoFileInput) {
@@ -1299,5 +1313,3 @@ function init() {
 }
 
 init();
-
-

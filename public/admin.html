@@ -94,7 +94,7 @@
                 id="adminImportSheetUrl"
                 class="search-input admin-import-input"
                 type="url"
-                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=..."
+                placeholder="Введите ссылку"
                 autocomplete="off"
               />
               <button
@@ -133,14 +133,14 @@
           </h2>
 
           <div class="admin-field-grid">
-            <label class="admin-field">
+            <label class="admin-field admin-field--type">
               <span class="admin-label">Тип</span>
               <select id="adminProjectType" class="admin-input">
                 <option value="МП1">МП1</option>
                 <option value="МП2">МП2</option>
               </select>
             </label>
-            <label class="admin-field">
+            <label class="admin-field admin-field--year">
               <span class="admin-label">Год</span>
               <input
                 id="adminProjectYear"
@@ -149,7 +149,7 @@
                 placeholder="2025"
               />
             </label>
-            <label class="admin-field">
+            <label class="admin-field admin-field--mentor">
               <span class="admin-label">Наставник</span>
               <input
                 id="adminProjectMentor"
@@ -157,10 +157,6 @@
                 type="text"
                 placeholder="ФИО"
               />
-            </label>
-            <label class="admin-field admin-field--checkbox">
-              <span class="admin-label">Защищенный проект</span>
-              <input id="adminProjectProtected" class="admin-checkbox" type="checkbox" />
             </label>
           </div>
 

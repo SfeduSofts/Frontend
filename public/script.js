@@ -19,6 +19,8 @@ const modalDescription = document.getElementById("projectModalDescription");
 const modalPdfLink = document.getElementById("projectModalPdf");
 const modalStudentsList = document.getElementById("projectModalStudents");
 const modalTeamName = document.getElementById("projectModalTeamName");
+const modalCloseButton = document.getElementById("projectModalClose");
+const projectsHelpOverlay = document.getElementById("projectsHelpOverlay");
 
 const state = {
   search: "",
@@ -54,7 +56,12 @@ function getProjectTeamNames(payload) {
 }
 
 function getProjectFullDescription(payload) {
-  return payload?.fullDescription || payload?.full_description || payload?.description || "";
+  return (
+    payload?.fullDescription ||
+    payload?.full_description ||
+    payload?.description ||
+    ""
+  );
 }
 
 function getProjectPdfUrl(payload, projectId) {
@@ -127,7 +134,26 @@ function parseYearRangeLabel(label) {
   return null;
 }
 
+function shouldShowProjectsHelp() {
+  return (
+    projectsLoaded &&
+    state.search.trim().length === 0 &&
+    state.types.size === 0 &&
+    state.years.size === 0
+  );
+}
+
+function updateProjectsHelpVisibility() {
+  if (!projectsHelpOverlay) return;
+
+  const shouldShow = shouldShowProjectsHelp();
+  projectsHelpOverlay.classList.toggle("is-visible", shouldShow);
+  projectsHelpOverlay.setAttribute("aria-hidden", String(!shouldShow));
+}
+
 function renderProjects() {
+  updateProjectsHelpVisibility();
+
   if (!projectsLoaded) {
     cardsContainer.innerHTML =
       '<article class="project-card">' +
@@ -200,7 +226,7 @@ function renderProjects() {
             </div>
             ${mentorHtml}
             <p class="project-description">${escapeHtml(
-              project.description
+              project.description,
             )}</p>
         </article>
     `;
@@ -227,14 +253,14 @@ function renderTeamStudents(groups) {
                   <li class="project-modal__student">
                     <div class="project-modal__student-info">
                       <div class="project-modal__student-name">${escapeHtml(
-                        student.name || "Без имени"
+                        student.name || "Без имени",
                       )}</div>
                       <div class="project-modal__student-role">${escapeHtml(
-                        student.role || ""
+                        student.role || "",
                       )}</div>
                     </div>
                   </li>
-                `
+                `,
               )
               .join("")}
           </ul>`
@@ -242,9 +268,9 @@ function renderTeamStudents(groups) {
 
     items.push(`
       <li class="project-modal__team-group">
-        <div class="project-modal__team-group-title">Команда: ${escapeHtml(
-          teamName
-        )}</div>
+        <div class="project-modal__team-group-title">Состав команды ${escapeHtml(
+          teamName,
+        )}:</div>
         ${studentsHtml}
       </li>
     `);
@@ -369,8 +395,8 @@ function openProjectModal(projectId) {
             loadTeamStudents(teamName, projectId).then((students) => ({
               teamName,
               students,
-            }))
-          )
+            })),
+          ),
         ).then((groups) => {
           if (requestId !== activeModalRequestId) return;
           renderTeamStudents(groups);
@@ -396,6 +422,10 @@ if (modalBackdrop) {
       closeProjectModal();
     }
   });
+}
+
+if (modalCloseButton) {
+  modalCloseButton.addEventListener("click", closeProjectModal);
 }
 
 document.addEventListener("keydown", (event) => {
@@ -443,4 +473,3 @@ function init() {
 }
 
 init();
-

@@ -84,6 +84,30 @@
         </div>
       </aside>
       <main class="main">
+        <div
+          class="projects-help-overlay projects-help-overlay--catalog"
+          id="projectsHelpOverlay"
+          aria-hidden="true"
+        >
+          <div class="projects-help-overlay__blocker" aria-hidden="true"></div>
+          <div class="projects-help-overlay__panel" aria-hidden="true">
+            <p class="projects-help-overlay__message">
+              Выберите фильтр или начните поиск
+            </p>
+          </div>
+          <div
+            class="projects-help-overlay__callout projects-help-overlay__callout--search"
+            aria-hidden="true"
+          >
+            <span class="projects-help-overlay__label">Поиск</span>
+          </div>
+          <div
+            class="projects-help-overlay__callout projects-help-overlay__callout--filters"
+            aria-hidden="true"
+          >
+            <span class="projects-help-overlay__label">Фильтры</span>
+          </div>
+        </div>
         <section class="cards-section">
           <div class="cards-grid" id="cardsContainer"></div>
           <div id="contacts" class="landingFooter_footer__A6KfV">
@@ -149,6 +173,14 @@
         aria-modal="true"
         aria-labelledby="projectModalTitle"
       >
+        <button
+          class="project-modal__close"
+          id="projectModalClose"
+          type="button"
+          aria-label="Закрыть модальное окно"
+        >
+          ×
+        </button>
         <div class="project-modal__content">
           <h2 class="project-modal__title" id="projectModalTitle"></h2>
 
