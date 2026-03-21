@@ -21,6 +21,9 @@ const modalStudentsList = document.getElementById("projectModalStudents");
 const modalTeamName = document.getElementById("projectModalTeamName");
 const modalCloseButton = document.getElementById("projectModalClose");
 const projectsHelpOverlay = document.getElementById("projectsHelpOverlay");
+const authorsOverlay = document.getElementById("authorsOverlay");
+const authorsOpenButton = document.getElementById("authorsOpenButton");
+const authorsCloseButton = document.getElementById("authorsCloseButton");
 
 const state = {
   search: "",
@@ -416,6 +419,18 @@ function closeProjectModal() {
   modalBackdrop.setAttribute("aria-hidden", "true");
 }
 
+function openAuthorsOverlay() {
+  if (!authorsOverlay) return;
+  authorsOverlay.classList.add("is-open");
+  authorsOverlay.setAttribute("aria-hidden", "false");
+}
+
+function closeAuthorsOverlay() {
+  if (!authorsOverlay) return;
+  authorsOverlay.classList.remove("is-open");
+  authorsOverlay.setAttribute("aria-hidden", "true");
+}
+
 if (modalBackdrop) {
   modalBackdrop.addEventListener("click", (event) => {
     if (event.target === modalBackdrop) {
@@ -430,6 +445,7 @@ if (modalCloseButton) {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    closeAuthorsOverlay();
     closeProjectModal();
   }
 });
@@ -437,8 +453,28 @@ document.addEventListener("keydown", (event) => {
 function init() {
   const contacts = document.getElementById("contacts");
   const sidebarInner = document.querySelector(".sidebar-inner");
+  const main = document.querySelector(".main");
+  const cardsSection = document.querySelector(".cards-section");
   if (contacts && sidebarInner) {
     sidebarInner.appendChild(contacts);
+  }
+
+  if (authorsOverlay && main && authorsOverlay.parentElement !== main) {
+    if (cardsSection) {
+      main.insertBefore(authorsOverlay, cardsSection);
+    } else {
+      main.appendChild(authorsOverlay);
+    }
+  }
+
+  const authorsPanel = authorsOverlay?.querySelector(".authors-overlay__panel");
+  if (authorsPanel) {
+    authorsPanel.removeAttribute("role");
+    authorsPanel.removeAttribute("aria-modal");
+  }
+
+  if (authorsCloseButton) {
+    authorsCloseButton.textContent = "Закрыть";
   }
 
   filterButtons.forEach((button) => {
@@ -452,6 +488,25 @@ function init() {
 
   if (resetFiltersButton) {
     resetFiltersButton.addEventListener("click", resetFilters);
+  }
+
+  if (authorsOpenButton) {
+    authorsOpenButton.addEventListener("click", openAuthorsOverlay);
+  }
+
+  if (authorsCloseButton) {
+    authorsCloseButton.addEventListener("click", closeAuthorsOverlay);
+  }
+
+  if (authorsOverlay) {
+    authorsOverlay.addEventListener("click", (event) => {
+      if (
+        event.target === authorsOverlay ||
+        event.target.classList.contains("authors-overlay__blocker")
+      ) {
+        closeAuthorsOverlay();
+      }
+    });
   }
 
   loadProjects()

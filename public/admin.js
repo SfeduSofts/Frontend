@@ -263,6 +263,13 @@ async function syncCurrentProjectDocuments(requestId) {
   updatePdfPreview();
 }
 
+async function refreshProjectsList() {
+  const loadedProjects = await loadProjects();
+  projects = Array.isArray(loadedProjects) ? loadedProjects : [];
+  projectsLoaded = true;
+  renderProjects();
+}
+
 function loadProjects() {
   return DataStore.loadProjects();
 }
@@ -542,7 +549,20 @@ function resetFilters() {
 
 function setImportStatus(message, isError = false) {
   if (!adminImportSheetStatus) return;
+
+  adminImportSheetStatus.classList.remove("admin-hidden");
   adminImportSheetStatus.textContent = message || "";
+  adminImportSheetStatus.style.display = message ? "block" : "";
+  adminImportSheetStatus.style.padding = message ? "10px 12px" : "";
+  adminImportSheetStatus.style.borderRadius = message ? "14px" : "";
+  adminImportSheetStatus.style.backgroundColor = message
+    ? isError
+      ? "rgba(184, 33, 33, 0.2)"
+      : "rgba(255, 255, 255, 0.12)"
+    : "";
+  adminImportSheetStatus.style.boxShadow = message
+    ? "0 10px 24px rgba(17, 31, 69, 0.12)"
+    : "";
   adminImportSheetStatus.style.color = isError
     ? "rgba(255, 189, 189, 0.95)"
     : "rgba(255, 255, 255, 0.85)";
@@ -550,6 +570,23 @@ function setImportStatus(message, isError = false) {
 
 function getImportSheetUrl() {
   return String(adminImportSheetUrlInput?.value || "").trim();
+}
+
+function buildImportSummary(result) {
+  const created = Number(result?.created || 0);
+  const skipped = Number(result?.skipped_existing || 0);
+  const errorsCount = Array.isArray(result?.errors) ? result.errors.length : 0;
+  const detectedType = String(result?.detected_type || "").trim() || "не определен";
+  const detectedYear = Number(result?.detected_year || 0);
+  const detectedPart =
+    Number.isFinite(detectedYear) && detectedYear > 0
+      ? `Тип: ${detectedType}, год: ${detectedYear}. `
+      : `Тип: ${detectedType}. `;
+
+  return {
+    message: `${detectedPart}Импорт завершен: создано ${created}, пропущено ${skipped}, ошибок ${errorsCount}.`,
+    hasErrors: errorsCount > 0,
+  };
 }
 
 async function handleImportSheetClick() {
@@ -572,36 +609,42 @@ async function handleImportSheetClick() {
   adminImportSheetButton.textContent = "Импорт...";
   setImportStatus("Импорт данных из Google-таблицы...");
 
+  let result = null;
   try {
-    const result = await DataStore.importProjectsFromSheet(sheetUrl);
-    const loadedProjects = await loadProjects();
-    projects = loadedProjects || [];
-    projectsLoaded = true;
-    renderProjects();
-
-    const created = Number(result?.created || 0);
-    const skipped = Number(result?.skipped_existing || 0);
-    const errorsCount = Array.isArray(result?.errors)
-      ? result.errors.length
-      : 0;
-    const detectedType =
-      String(result?.detected_type || "").trim() || "не определен";
-    const detectedYear = Number(result?.detected_year || 0);
-    const detectedPart =
-      Number.isFinite(detectedYear) && detectedYear > 0
-        ? `Тип: ${detectedType}, год: ${detectedYear}. `
-        : `Тип: ${detectedType}. `;
-
-    const statusMessage = `${detectedPart}Импорт завершен: создано ${created}, пропущено ${skipped}, ошибок ${errorsCount}.`;
-    setImportStatus(statusMessage, errorsCount > 0);
-    alert(statusMessage);
+    result = await DataStore.importProjectsFromSheet(sheetUrl);
   } catch (error) {
     console.error("Ошибка импорта из таблицы:", error);
+
+    try {
+      await refreshProjectsList();
+      const recoveryMessage =
+        "Импорт, возможно, завершился, но сервер вернул ошибку ответа. Список проектов обновлен.";
+      setImportStatus(recoveryMessage, true);
+      return;
+    } catch (refreshError) {
+      console.error(
+        "Не удалось обновить список проектов после ошибки импорта:",
+        refreshError,
+      );
+      setImportStatus(
+        "Ошибка импорта. Проверьте ссылку на таблицу и доступность API.",
+        true,
+      );
+      return;
+    }
+  }
+
+  try {
+    const summary = buildImportSummary(result);
+    setImportStatus(summary.message, summary.hasErrors);
+
+    await refreshProjectsList();
+  } catch (error) {
+    console.error("Импорт выполнен, но список проектов не обновился:", error);
     setImportStatus(
-      "Ошибка импорта. Проверьте ссылку на таблицу и доступность API.",
+      "Импорт выполнен, но не удалось обновить список проектов автоматически. Обновите страницу, если список не обновился.",
       true,
     );
-    alert("Не удалось выполнить импорт из таблицы.");
   } finally {
     adminImportSheetButton.disabled = false;
     adminImportSheetButton.textContent = initialText;
