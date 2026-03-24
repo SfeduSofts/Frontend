@@ -8,7 +8,7 @@
   </head>
   <body class="catalog-page">
     <div class="page">
-      <aside class="sidebar">
+      <aside class="sidebar" id="catalogSidebar">
         <div class="sidebar-inner">
           <div class="search-block">
             <label class="visually-hidden" for="searchInput"
@@ -83,6 +83,14 @@
           </div>
         </div>
       </aside>
+      <div
+        class="sidebar-backdrop"
+        id="sidebarBackdrop"
+        aria-hidden="true"
+      ></div>
+      <div class="sidebar-swipe-hint" id="sidebarSwipeHint" aria-hidden="true">
+        <span class="sidebar-swipe-hint__finger" aria-hidden="true"></span>
+      </div>
       <main class="main">
         <div
           class="projects-help-overlay projects-help-overlay--catalog"

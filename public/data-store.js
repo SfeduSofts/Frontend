@@ -1,5 +1,15 @@
 (() => {
-  const API_BASE = "http://127.0.0.1:8000/api";
+  function getApiOrigin() {
+    const currentProtocol =
+      window.location.protocol === "https:" ? "https:" : "http:";
+    const currentHost = window.location.hostname || "127.0.0.1";
+
+    return `${currentProtocol}//${currentHost}:8000`;
+  }
+
+  const API_ORIGIN = getApiOrigin();
+  const API_BASE = `${API_ORIGIN}/api`;
+  const PROJECT_FILES_BASE_URL = `${API_BASE}/projects`;
   const LOGIN_URL = "https://lms.sfedu.ru/auth/oidc/?source=loginpage";
 
   async function requestJson(path, options = {}) {
@@ -49,6 +59,9 @@
   }
 
   const DataStore = {
+    apiOrigin: API_ORIGIN,
+    apiBase: API_BASE,
+    projectFilesBaseUrl: PROJECT_FILES_BASE_URL,
     loadProjects() {
       return requestJson("/projects");
     },

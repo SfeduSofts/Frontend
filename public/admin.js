@@ -2,7 +2,7 @@
 let projectsLoaded = false;
 
 const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
-const PROJECT_FILES_BASE_URL = "http://127.0.0.1:8000/api/projects";
+const PROJECT_FILES_BASE_URL = DataStore.projectFilesBaseUrl;
 const PROJECT_TYPE_MP1 = "\u041C\u041F1";
 const PROJECT_TYPE_MP2 = "\u041C\u041F2";
 

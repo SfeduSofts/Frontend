@@ -2,7 +2,7 @@
 let projectsLoaded = false;
 
 const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
-const PROJECT_FILES_BASE_URL = "http://127.0.0.1:8000/api/projects";
+const PROJECT_FILES_BASE_URL = DataStore.projectFilesBaseUrl;
 function loadProjects() {
   return DataStore.loadProjects();
 }
@@ -11,6 +11,11 @@ const cardsContainer = document.getElementById("cardsContainer");
 const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-button");
 const resetFiltersButton = document.getElementById("resetFiltersButton");
+const page = document.querySelector(".page");
+const sidebar = document.getElementById("catalogSidebar");
+const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+const sidebarSwipeHint = document.getElementById("sidebarSwipeHint");
+const mobileSidebarMediaQuery = window.matchMedia("(max-width: 720px)");
 
 const modalBackdrop = document.getElementById("projectModal");
 const modalTitle = document.getElementById("projectModalTitle");
@@ -32,6 +37,17 @@ const state = {
 };
 
 let activeModalRequestId = 0;
+let isMobileSidebarOpen = false;
+let swipeGestureState = null;
+let swipeHintTimeoutId = 0;
+let hasCompletedSidebarSwipeHint = false;
+
+const SIDEBAR_SWIPE_HINT_STORAGE_KEY = "catalogSidebarSwipeHintCompleted";
+const SIDEBAR_OPEN_EDGE_THRESHOLD = 36;
+const SIDEBAR_OPEN_SWIPE_DISTANCE = 68;
+const SIDEBAR_CLOSE_SWIPE_DISTANCE = 52;
+const SIDEBAR_MAX_SWIPE_VERTICAL_DRIFT = 72;
+const SIDEBAR_SWIPE_HINT_DELAY_MS = 700;
 
 const escapeHtml = (value) =>
   String(value ?? "")
@@ -40,6 +56,26 @@ const escapeHtml = (value) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+
+function readBooleanStorage(key) {
+  try {
+    return window.localStorage.getItem(key) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function writeBooleanStorage(key, value) {
+  try {
+    if (value) {
+      window.localStorage.setItem(key, "1");
+    } else {
+      window.localStorage.removeItem(key);
+    }
+  } catch (_) {
+    // ignore storage access issues
+  }
+}
 
 function loadProjectDetails(projectId) {
   return DataStore.loadProjectDetails(projectId);
@@ -152,6 +188,168 @@ function updateProjectsHelpVisibility() {
   const shouldShow = shouldShowProjectsHelp();
   projectsHelpOverlay.classList.toggle("is-visible", shouldShow);
   projectsHelpOverlay.setAttribute("aria-hidden", String(!shouldShow));
+}
+
+function syncMobileSidebarState() {
+  const isMobile = mobileSidebarMediaQuery.matches;
+  const shouldOpen = isMobile && isMobileSidebarOpen;
+
+  if (page) {
+    page.classList.toggle("is-sidebar-open", shouldOpen);
+  }
+
+  if (sidebar) {
+    sidebar.setAttribute("aria-hidden", String(isMobile && !shouldOpen));
+  }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.setAttribute("aria-hidden", String(!shouldOpen));
+  }
+}
+
+function setMobileSidebarOpen(nextOpen) {
+  const shouldOpen = mobileSidebarMediaQuery.matches && Boolean(nextOpen);
+
+  isMobileSidebarOpen = shouldOpen;
+  syncMobileSidebarState();
+
+  if (shouldOpen) {
+    completeSidebarSwipeHint();
+  } else if (mobileSidebarMediaQuery.matches) {
+    scheduleSidebarSwipeHint();
+  }
+}
+
+function hideSidebarSwipeHint() {
+  window.clearTimeout(swipeHintTimeoutId);
+
+  if (!sidebarSwipeHint) return;
+
+  sidebarSwipeHint.classList.remove("is-visible", "is-animating");
+  sidebarSwipeHint.setAttribute("aria-hidden", "true");
+}
+
+function completeSidebarSwipeHint() {
+  hasCompletedSidebarSwipeHint = true;
+  writeBooleanStorage(SIDEBAR_SWIPE_HINT_STORAGE_KEY, true);
+  hideSidebarSwipeHint();
+}
+
+function scheduleSidebarSwipeHint() {
+  window.clearTimeout(swipeHintTimeoutId);
+
+  if (
+    !sidebarSwipeHint ||
+    !mobileSidebarMediaQuery.matches ||
+    isMobileSidebarOpen ||
+    hasCompletedSidebarSwipeHint ||
+    isOverlayInteractionActive()
+  ) {
+    hideSidebarSwipeHint();
+    return;
+  }
+
+  swipeHintTimeoutId = window.setTimeout(() => {
+    if (
+      !sidebarSwipeHint ||
+      !mobileSidebarMediaQuery.matches ||
+      isMobileSidebarOpen ||
+      hasCompletedSidebarSwipeHint ||
+      isOverlayInteractionActive()
+    ) {
+      return;
+    }
+
+    sidebarSwipeHint.classList.remove("is-animating");
+    sidebarSwipeHint.classList.add("is-visible");
+    sidebarSwipeHint.setAttribute("aria-hidden", "false");
+
+    window.requestAnimationFrame(() => {
+      sidebarSwipeHint.classList.add("is-animating");
+    });
+  }, SIDEBAR_SWIPE_HINT_DELAY_MS);
+}
+
+function isOverlayInteractionActive() {
+  return (
+    modalBackdrop?.classList.contains("is-open") ||
+    authorsOverlay?.classList.contains("is-open")
+  );
+}
+
+function startSidebarSwipeGesture(event) {
+  if (
+    !mobileSidebarMediaQuery.matches ||
+    isOverlayInteractionActive() ||
+    !event.touches ||
+    event.touches.length !== 1
+  ) {
+    swipeGestureState = null;
+    return;
+  }
+
+  const touch = event.touches[0];
+  const startedInsideSidebar = Boolean(sidebar?.contains(event.target));
+
+  if (!isMobileSidebarOpen) {
+    if (touch.clientX > SIDEBAR_OPEN_EDGE_THRESHOLD) {
+      swipeGestureState = null;
+      return;
+    }
+
+    swipeGestureState = {
+      mode: "open",
+      startX: touch.clientX,
+      startY: touch.clientY,
+    };
+    return;
+  }
+
+  if (!startedInsideSidebar) {
+    swipeGestureState = null;
+    return;
+  }
+
+  swipeGestureState = {
+    mode: "close",
+    startX: touch.clientX,
+    startY: touch.clientY,
+  };
+}
+
+function finishSidebarSwipeGesture(event) {
+  if (!swipeGestureState || !event.changedTouches || event.changedTouches.length === 0) {
+    swipeGestureState = null;
+    return;
+  }
+
+  const touch = event.changedTouches[0];
+  const deltaX = touch.clientX - swipeGestureState.startX;
+  const deltaY = touch.clientY - swipeGestureState.startY;
+  const isMostlyHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
+  const isVerticalDriftAllowed =
+    Math.abs(deltaY) <= SIDEBAR_MAX_SWIPE_VERTICAL_DRIFT;
+
+  if (!isMostlyHorizontal || !isVerticalDriftAllowed) {
+    swipeGestureState = null;
+    return;
+  }
+
+  if (
+    swipeGestureState.mode === "open" &&
+    deltaX >= SIDEBAR_OPEN_SWIPE_DISTANCE
+  ) {
+    setMobileSidebarOpen(true);
+  }
+
+  if (
+    swipeGestureState.mode === "close" &&
+    deltaX <= -SIDEBAR_CLOSE_SWIPE_DISTANCE
+  ) {
+    setMobileSidebarOpen(false);
+  }
+
+  swipeGestureState = null;
 }
 
 function renderProjects() {
@@ -348,6 +546,8 @@ function resetFilters() {
 }
 
 function openProjectModal(projectId) {
+  hideSidebarSwipeHint();
+
   const requestId = (activeModalRequestId += 1);
 
   loadProjectDetails(projectId)
@@ -417,10 +617,12 @@ function openProjectModal(projectId) {
 function closeProjectModal() {
   modalBackdrop.classList.remove("is-open");
   modalBackdrop.setAttribute("aria-hidden", "true");
+  scheduleSidebarSwipeHint();
 }
 
 function openAuthorsOverlay() {
   if (!authorsOverlay) return;
+  hideSidebarSwipeHint();
   authorsOverlay.classList.add("is-open");
   authorsOverlay.setAttribute("aria-hidden", "false");
 }
@@ -429,6 +631,7 @@ function closeAuthorsOverlay() {
   if (!authorsOverlay) return;
   authorsOverlay.classList.remove("is-open");
   authorsOverlay.setAttribute("aria-hidden", "true");
+  scheduleSidebarSwipeHint();
 }
 
 if (modalBackdrop) {
@@ -443,8 +646,16 @@ if (modalCloseButton) {
   modalCloseButton.addEventListener("click", closeProjectModal);
 }
 
+if (sidebarSwipeHint) {
+  sidebarSwipeHint.addEventListener("animationend", (event) => {
+    if (!event.target.classList.contains("sidebar-swipe-hint__finger")) return;
+    hideSidebarSwipeHint();
+  });
+}
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    setMobileSidebarOpen(false);
     closeAuthorsOverlay();
     closeProjectModal();
   }
@@ -489,6 +700,51 @@ function init() {
   if (resetFiltersButton) {
     resetFiltersButton.addEventListener("click", resetFilters);
   }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener("click", () => {
+      setMobileSidebarOpen(false);
+    });
+  }
+
+  document.addEventListener("touchstart", startSidebarSwipeGesture, {
+    passive: true,
+  });
+  document.addEventListener("touchend", finishSidebarSwipeGesture, {
+    passive: true,
+  });
+  document.addEventListener("touchcancel", () => {
+    swipeGestureState = null;
+  });
+
+  const handleMobileSidebarViewportChange = (event) => {
+    if (!event.matches) {
+      isMobileSidebarOpen = false;
+      swipeGestureState = null;
+      hideSidebarSwipeHint();
+    }
+
+    syncMobileSidebarState();
+
+    if (event.matches) {
+      scheduleSidebarSwipeHint();
+    }
+  };
+
+  if (typeof mobileSidebarMediaQuery.addEventListener === "function") {
+    mobileSidebarMediaQuery.addEventListener(
+      "change",
+      handleMobileSidebarViewportChange,
+    );
+  } else if (typeof mobileSidebarMediaQuery.addListener === "function") {
+    mobileSidebarMediaQuery.addListener(handleMobileSidebarViewportChange);
+  }
+
+  hasCompletedSidebarSwipeHint = readBooleanStorage(
+    SIDEBAR_SWIPE_HINT_STORAGE_KEY,
+  );
+  syncMobileSidebarState();
+  scheduleSidebarSwipeHint();
 
   if (authorsOpenButton) {
     authorsOpenButton.addEventListener("click", openAuthorsOverlay);
