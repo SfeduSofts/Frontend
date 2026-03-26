@@ -52,8 +52,7 @@ button {
   gap: 24px;
 }
 
-.sidebar-backdrop,
-.sidebar-swipe-hint {
+.sidebar-backdrop {
   display: none;
 }
 
@@ -622,139 +621,9 @@ button {
     pointer-events: auto;
   }
 
-  .catalog-page .sidebar-swipe-hint {
-    position: fixed;
-    top: 116px;
-    left: 10px;
-    width: 108px;
-    height: 56px;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 12;
-  }
-
-  .catalog-page .sidebar-swipe-hint.is-visible {
-    display: block;
-  }
-
-  .catalog-page .sidebar-swipe-hint::before {
-    content: "";
-    position: absolute;
-    left: 12px;
-    right: 18px;
-    top: 50%;
-    height: 8px;
-    border-radius: 999px;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.34) 45%,
-      rgba(255, 255, 255, 0)
-    );
-    transform: translateY(-50%) scaleX(0.45);
-    opacity: 0;
-    transform-origin: left center;
-  }
-
-  .catalog-page .sidebar-swipe-hint.is-animating {
-    opacity: 1;
-  }
-
-  .catalog-page .sidebar-swipe-hint.is-animating::before {
-    animation: sidebar-swipe-hint-trail 1.5s ease-out forwards;
-  }
-
-  .catalog-page .sidebar-swipe-hint__finger {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 28px;
-    height: 34px;
-    border-radius: 16px 16px 14px 14px;
-    background: rgba(255, 255, 255, 0.46);
-    border: 1px solid rgba(255, 255, 255, 0.38);
-    box-shadow: 0 8px 18px rgba(33, 62, 137, 0.18);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    opacity: 0;
-    transform: translate(0, -50%) scale(0.92);
-  }
-
-  .catalog-page .sidebar-swipe-hint__finger::before {
-    content: "";
-    position: absolute;
-    left: 8px;
-    top: -16px;
-    width: 12px;
-    height: 24px;
-    border-radius: 999px 999px 10px 10px;
-    background: inherit;
-    border: inherit;
-    border-bottom: none;
-  }
-
-  .catalog-page .sidebar-swipe-hint__finger::after {
-    content: "";
-    position: absolute;
-    right: -6px;
-    top: 9px;
-    width: 10px;
-    height: 14px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.32);
-    transform: rotate(28deg);
-  }
-
-  .catalog-page .sidebar-swipe-hint.is-animating .sidebar-swipe-hint__finger {
-    animation: sidebar-swipe-hint-finger 1.5s ease-out forwards;
-  }
-
   .catalog-page .main {
     width: 100%;
     min-width: 0;
-  }
-}
-
-@keyframes sidebar-swipe-hint-finger {
-  0% {
-    opacity: 0;
-    transform: translate(0, -50%) scale(0.9);
-  }
-
-  16% {
-    opacity: 1;
-    transform: translate(0, -50%) scale(1);
-  }
-
-  72% {
-    opacity: 1;
-    transform: translate(58px, -50%) scale(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(84px, -50%) scale(0.95);
-  }
-}
-
-@keyframes sidebar-swipe-hint-trail {
-  0% {
-    opacity: 0;
-    transform: translateY(-50%) scaleX(0.35);
-  }
-
-  20% {
-    opacity: 1;
-  }
-
-  72% {
-    opacity: 0.9;
-    transform: translateY(-50%) scaleX(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(-50%) scaleX(1.08);
   }
 }
 
@@ -787,6 +656,7 @@ button {
   max-width: 960px;
   width: 100%;
   max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1169,6 +1039,13 @@ button {
 
   .project-modal-backdrop {
     padding: 12px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .project-modal {
+    max-height: 100%;
+    border-radius: 20px;
   }
 
   .project-modal__content {

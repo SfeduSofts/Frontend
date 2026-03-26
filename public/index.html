@@ -88,9 +88,6 @@
         id="sidebarBackdrop"
         aria-hidden="true"
       ></div>
-      <div class="sidebar-swipe-hint" id="sidebarSwipeHint" aria-hidden="true">
-        <span class="sidebar-swipe-hint__finger" aria-hidden="true"></span>
-      </div>
       <main class="main">
         <div
           class="projects-help-overlay projects-help-overlay--catalog"
@@ -99,7 +96,12 @@
         >
           <div class="projects-help-overlay__blocker" aria-hidden="true"></div>
           <div class="projects-help-overlay__panel" aria-hidden="true">
-            <p class="projects-help-overlay__message">
+            <p
+              class="projects-help-overlay__message"
+              id="projectsHelpMessage"
+              data-desktop-message="Выберите фильтр или начните поиск"
+              data-mobile-message="Смахните вправо, чтобы начать поиск или выбрать фильтры"
+            >
               Выберите фильтр или начните поиск
             </p>
           </div>
