@@ -5,6 +5,7 @@ const DEFAULT_PROJECT_IMAGE_URL = "images/projects/default-project.jpg";
 const PROJECT_FILES_BASE_URL = DataStore.projectFilesBaseUrl;
 const PROJECT_TYPE_MP1 = "\u041C\u041F1";
 const PROJECT_TYPE_MP2 = "\u041C\u041F2";
+const PENDING_PROJECT_MODAL_STORAGE_KEY = "sfedu_admin_pending_project_modal";
 
 const cardsContainer = document.getElementById("cardsContainer");
 const searchInput = document.getElementById("searchInput");
@@ -64,6 +65,8 @@ let selectedPdfPreviewUrl = "";
 let removePhotoPending = false;
 let removePdfPending = false;
 let closeOnBackdropPointerUp = false;
+let modalCloseBlockedUntil = 0;
+let newProjectModalGuard = null;
 let selectedProjectIds = new Set();
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
@@ -741,12 +744,169 @@ function getDefaultYearFromFilters() {
   return "";
 }
 
+function getDefaultProjectName() {
+  const baseName = "Новый проект";
+  const existingNames = new Set(
+    projects
+      .map((project) => String(project?.name || "").trim().toLowerCase())
+      .filter(Boolean),
+  );
+
+  if (!existingNames.has(baseName.toLowerCase())) {
+    return baseName;
+  }
+
+  let index = 2;
+  while (existingNames.has(`${baseName} ${index}`.toLowerCase())) {
+    index += 1;
+  }
+
+  return `${baseName} ${index}`;
+}
+
+function persistPendingProjectModal(projectId, ttlMs = 20000) {
+  if (!Number.isFinite(Number(projectId))) return;
+
+  try {
+    sessionStorage.setItem(
+      PENDING_PROJECT_MODAL_STORAGE_KEY,
+      JSON.stringify({
+        projectId: Number(projectId),
+        expiresAt: Date.now() + ttlMs,
+      }),
+    );
+  } catch (_) {
+    // Ignore storage failures.
+  }
+}
+
+function readPendingProjectModal() {
+  try {
+    const raw = sessionStorage.getItem(PENDING_PROJECT_MODAL_STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    const projectId = Number(parsed?.projectId);
+    const expiresAt = Number(parsed?.expiresAt);
+
+    if (!Number.isFinite(projectId) || !Number.isFinite(expiresAt)) {
+      sessionStorage.removeItem(PENDING_PROJECT_MODAL_STORAGE_KEY);
+      return null;
+    }
+
+    if (Date.now() > expiresAt) {
+      sessionStorage.removeItem(PENDING_PROJECT_MODAL_STORAGE_KEY);
+      return null;
+    }
+
+    return { projectId, expiresAt };
+  } catch (_) {
+    try {
+      sessionStorage.removeItem(PENDING_PROJECT_MODAL_STORAGE_KEY);
+    } catch (_) {
+      // Ignore storage failures.
+    }
+    return null;
+  }
+}
+
+function clearPendingProjectModal() {
+  try {
+    sessionStorage.removeItem(PENDING_PROJECT_MODAL_STORAGE_KEY);
+  } catch (_) {
+    // Ignore storage failures.
+  }
+}
+
+function blockModalClose(durationMs = 400) {
+  modalCloseBlockedUntil = performance.now() + durationMs;
+  closeOnBackdropPointerUp = false;
+}
+
+function isModalCloseBlocked() {
+  return performance.now() < modalCloseBlockedUntil;
+}
+
+function armNewProjectModalGuard(projectId, durationMs = 1200) {
+  newProjectModalGuard = {
+    projectId,
+    reopenUntil: performance.now() + durationMs,
+    restoring: false,
+  };
+}
+
+function clearNewProjectModalGuard() {
+  newProjectModalGuard = null;
+}
+
+function shouldKeepNewProjectModalOpen() {
+  return (
+    newProjectModalGuard &&
+    currentProjectId != null &&
+    Number(currentProjectId) === Number(newProjectModalGuard.projectId) &&
+    performance.now() < newProjectModalGuard.reopenUntil
+  );
+}
+
+function restoreProtectedModalIfNeeded() {
+  if (!modalBackdrop || !shouldKeepNewProjectModalOpen()) return;
+  if (newProjectModalGuard.restoring) return;
+
+  const isOpen = modalBackdrop.classList.contains("is-open");
+  const isHidden = modalBackdrop.getAttribute("aria-hidden") === "true";
+  if (isOpen && !isHidden) return;
+
+  newProjectModalGuard.restoring = true;
+  modalBackdrop.classList.add("is-open");
+  modalBackdrop.setAttribute("aria-hidden", "false");
+
+  setTimeout(() => {
+    if (newProjectModalGuard) {
+      newProjectModalGuard.restoring = false;
+    }
+  }, 0);
+}
+
+function isInitialModalInteractionBlocked() {
+  return isModalCloseBlocked();
+}
+
+function consumeBlockedModalInteraction(event) {
+  if (!isInitialModalInteractionBlocked()) return false;
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  return true;
+}
+
+function restorePendingProjectModalIfNeeded() {
+  const pending = readPendingProjectModal();
+  if (!pending) return;
+
+  const projectExists = projects.some(
+    (project) => Number(project?.id) === Number(pending.projectId),
+  );
+  if (!projectExists) {
+    clearPendingProjectModal();
+    return;
+  }
+
+  armNewProjectModalGuard(pending.projectId, 4000);
+  openProjectModal(pending.projectId);
+}
+
+function schedulePendingProjectModalRestore(delayMs = 1200) {
+  window.setTimeout(() => {
+    if (modalBackdrop?.classList.contains("is-open")) return;
+    restorePendingProjectModalIfNeeded();
+  }, delayMs);
+}
+
 async function createProject() {
   const defaultType = getDefaultTypeFromFilters();
   const defaultYear = getDefaultYearFromFilters();
 
   const newProject = await DataStore.createProject({
-    name: "Тема проекта",
+    name: getDefaultProjectName(),
     type: defaultType,
     year: defaultYear || 2016,
     description: "Введите краткое описание проекта",
@@ -768,8 +928,9 @@ async function handleAddProjectClick(event) {
   resetFiltersForNewProject();
   try {
     const newProjectId = await createProject();
+    persistPendingProjectModal(newProjectId);
     renderProjects();
-    openProjectModal(newProjectId);
+    schedulePendingProjectModalRestore();
   } catch (error) {
     console.error("Ошибка создания проекта:", error);
     alert("Не удалось создать проект. Попробуйте ещё раз.");
@@ -935,6 +1096,12 @@ function openProjectModal(projectId) {
   if (!base) return;
 
   currentProjectId = projectId;
+  if (
+    newProjectModalGuard &&
+    Number(newProjectModalGuard.projectId) !== Number(projectId)
+  ) {
+    clearNewProjectModalGuard();
+  }
 
   resetDocumentDraft();
 
@@ -957,6 +1124,7 @@ function openProjectModal(projectId) {
   syncTeamNamesFromInput();
   renderTeamStudentsPlaceholder("Загрузка списка студентов...");
 
+  blockModalClose();
   modalBackdrop.classList.add("is-open");
   modalBackdrop.setAttribute("aria-hidden", "false");
   syncCurrentProjectDocuments(requestId);
@@ -984,13 +1152,22 @@ function openProjectModal(projectId) {
     });
 }
 
-function closeProjectModal() {
+function closeProjectModal(options = {}) {
+  const force = options?.force === true;
+  if (!force && (isModalCloseBlocked() || shouldKeepNewProjectModalOpen())) {
+    return false;
+  }
+
   modalBackdrop.classList.remove("is-open");
   modalBackdrop.setAttribute("aria-hidden", "true");
   currentProjectId = null;
   currentTeamNames = [];
   draftTeamStudents = {};
+  closeOnBackdropPointerUp = false;
+  clearPendingProjectModal();
+  clearNewProjectModalGuard();
   resetDocumentDraft();
+  return true;
 }
 
 async function saveCurrentProject() {
@@ -1055,7 +1232,7 @@ async function saveCurrentProject() {
       }),
     );
 
-    closeProjectModal();
+    closeProjectModal({ force: true });
     renderProjects();
   } catch (error) {
     console.error("Ошибка сохранения проекта:", error);
@@ -1080,7 +1257,7 @@ async function deleteCurrentProject() {
   try {
     await DataStore.deleteProject(projectId);
     projects = projects.filter((item) => item.id !== projectId);
-    closeProjectModal();
+    closeProjectModal({ force: true });
     renderProjects();
   } catch (error) {
     console.error("Ошибка удаления проекта:", error);
@@ -1124,7 +1301,7 @@ async function handleBulkDeleteClick() {
     );
 
     if (currentProjectId != null && deletedIds.has(Number(currentProjectId))) {
-      closeProjectModal();
+      closeProjectModal({ force: true });
     }
   }
 
@@ -1230,12 +1407,30 @@ function init() {
   }
 
   if (modalBackdrop) {
+    const modalObserver = new MutationObserver(() => {
+      restoreProtectedModalIfNeeded();
+    });
+    modalObserver.observe(modalBackdrop, {
+      attributes: true,
+      attributeFilter: ["class", "aria-hidden"],
+    });
+
     modalBackdrop.addEventListener("pointerdown", (event) => {
+      if (isModalCloseBlocked()) {
+        closeOnBackdropPointerUp = false;
+        return;
+      }
+
       closeOnBackdropPointerUp =
         event.button === 0 && event.target === modalBackdrop;
     });
 
     modalBackdrop.addEventListener("pointerup", (event) => {
+      if (isModalCloseBlocked()) {
+        closeOnBackdropPointerUp = false;
+        return;
+      }
+
       const shouldClose =
         closeOnBackdropPointerUp &&
         event.button === 0 &&
@@ -1277,15 +1472,24 @@ function init() {
   });
 
   if (adminSaveButton) {
-    adminSaveButton.addEventListener("click", saveCurrentProject);
+    adminSaveButton.addEventListener("click", (event) => {
+      if (consumeBlockedModalInteraction(event)) return;
+      saveCurrentProject();
+    });
   }
 
   if (adminCancelButton) {
-    adminCancelButton.addEventListener("click", closeProjectModal);
+    adminCancelButton.addEventListener("click", (event) => {
+      if (consumeBlockedModalInteraction(event)) return;
+      closeProjectModal();
+    });
   }
 
   if (adminDeleteButton) {
-    adminDeleteButton.addEventListener("click", deleteCurrentProject);
+    adminDeleteButton.addEventListener("click", (event) => {
+      if (consumeBlockedModalInteraction(event)) return;
+      deleteCurrentProject();
+    });
   }
 
   if (modalStudentsList) {
@@ -1333,6 +1537,7 @@ function init() {
       projects = loadedProjects;
       projectsLoaded = true;
       renderProjects();
+      restorePendingProjectModalIfNeeded();
     })
     .catch((error) => {
       console.error("Ошибка загрузки списка проектов:", error);
