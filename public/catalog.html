@@ -1,59 +1,125 @@
 ﻿<!DOCTYPE html>
-<html lang="ru" class="home-html">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ПроИКТИБ</title>
+    <title>Каталог проектов</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body class="home-page">
-    <div class="home-shell">
-      <main class="home-main">
-        <section class="home-hero" aria-labelledby="homeTitle">
-          <div class="home-hero__content">
-            <p class="home-hero__eyebrow">Проектный офис ИКТИБ ЮФУ</p>
-            <h1 class="home-hero__title" id="homeTitle">
-              Главная навигация по цифровым пространствам ПроИКТИБ
-            </h1>
-            <p class="home-hero__description">
-              Выберите страницу, с которой хотите начать: каталог проектов или
-              страницу аудитории ПроИКТИБ.
+  <body class="catalog-page">
+    <div class="page">
+      <aside class="sidebar" id="catalogSidebar">
+        <div class="sidebar-inner">
+          <div class="search-block">
+            <label class="visually-hidden" for="searchInput"
+              >Поиск по имени проекта</label
+            >
+            <input
+              id="searchInput"
+              class="search-input"
+              type="search"
+              placeholder="Поиск"
+              autocomplete="off"
+            />
+          </div>
+          <div class="filters-section">
+            <div class="filters-group">
+              <div class="filters-group-buttons">
+                <button
+                  class="filter-button"
+                  data-filter-type="type"
+                  data-value="МП1"
+                >
+                  МП1
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="type"
+                  data-value="МП2"
+                >
+                  МП2
+                </button>
+              </div>
+            </div>
+            <div class="years-block">
+              <div class="years-list">
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2024–2025"
+                >
+                  2024–2025
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2025–2026"
+                >
+                  2025–2026
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2026–2027"
+                >
+                  2026–2027
+                </button>
+                <button
+                  class="filter-button"
+                  data-filter-type="year"
+                  data-value="2027–2028"
+                >
+                  2027–2028
+                </button>
+              </div>
+            </div>
+            <button
+              class="reset-filters-button"
+              id="resetFiltersButton"
+              type="button"
+            >
+              Сбросить фильтры
+            </button>
+          </div>
+        </div>
+      </aside>
+      <div
+        class="sidebar-backdrop"
+        id="sidebarBackdrop"
+        aria-hidden="true"
+      ></div>
+      <main class="main">
+        <div
+          class="projects-help-overlay projects-help-overlay--catalog"
+          id="projectsHelpOverlay"
+          aria-hidden="true"
+        >
+          <div class="projects-help-overlay__blocker" aria-hidden="true"></div>
+          <div class="projects-help-overlay__panel" aria-hidden="true">
+            <p
+              class="projects-help-overlay__message"
+              id="projectsHelpMessage"
+              data-desktop-message="Выберите фильтр или начните поиск"
+              data-mobile-message="Смахните вправо, чтобы начать поиск или выбрать фильтры"
+            >
+              Выберите фильтр или начните поиск
             </p>
           </div>
-        </section>
-
-        <section class="home-links" aria-label="Разделы">
-          <a
-            class="home-link-card home-link-card--catalog"
-            href="./catalog.html"
-            data-home-card-mark="МП"
+          <div
+            class="projects-help-overlay__callout projects-help-overlay__callout--search"
+            aria-hidden="true"
           >
-            <h2 class="home-link-card__title">Каталог проектов</h2>
-            <p class="home-link-card__description">
-              Поиск по проектам, фильтры по типам и годам, подробные карточки и
-              состав команд.
-            </p>
-            <span class="home-link-card__action">Открыть каталог</span>
-          </a>
-
-          <a
-            class="home-link-card home-link-card--auditorium"
-            href="https://ictis.sfedu.ru/partners-proictib/"
-            target="_blank"
-            rel="noreferrer noopener"
-            data-home-card-mark="ИКТИБ"
+            <span class="projects-help-overlay__label">Поиск</span>
+          </div>
+          <div
+            class="projects-help-overlay__callout projects-help-overlay__callout--filters"
+            aria-hidden="true"
           >
-            <h2 class="home-link-card__title">Аудитория ПроИКТИБ</h2>
-            <p class="home-link-card__description">
-              Информация о аудитории ПроИКТИБ, бронирование оборудования на официальной странице.
-            </p>
-            <span class="home-link-card__action">Перейти на страницу</span>
-          </a>
-        </section>
-      </main>
-
-      <footer class="home-footer">
-        <div class="home-footer__panel">
+            <span class="projects-help-overlay__label">Фильтры</span>
+          </div>
+        </div>
+        <section class="cards-section">
+          <div class="cards-grid" id="cardsContainer"></div>
           <div id="contacts" class="landingFooter_footer__A6KfV">
             <div class="landingFooter_footer__about__1W9xb">
               <div class="landingFooter_about__contacts__2hZfl">
@@ -104,13 +170,19 @@
                     src="./images/footer/ЮФУ.png"
                     alt="ЮФУ"
                 /></a>
+                <button
+                  id="authorsOpenButton"
+                  class="landingFooter_about__authors_button"
+                  type="button"
+                >
+                  О нас
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </section>
+      </main>
     </div>
-
     <div class="authors-overlay" id="authorsOverlay" aria-hidden="true">
       <div class="authors-overlay__blocker" aria-hidden="true"></div>
       <div class="authors-overlay__panel" role="dialog" aria-modal="true">
@@ -178,7 +250,69 @@
         </div>
       </div>
     </div>
+    <div class="project-modal-backdrop" id="projectModal" aria-hidden="true">
+      <div
+        class="project-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="projectModalTitle"
+      >
+        <button
+          class="project-modal__close"
+          id="projectModalClose"
+          type="button"
+          aria-label="Закрыть модальное окно"
+        >
+          ×
+        </button>
+        <div class="project-modal__content">
+          <h2 class="project-modal__title" id="projectModalTitle"></h2>
 
-    <script src="home.js"></script>
+          <div class="project-modal__layout">
+            <div class="project-modal__main">
+              <div class="project-modal__image-wrapper">
+                <img
+                  id="projectModalImage"
+                  class="project-modal__image"
+                  src=""
+                  alt=""
+                />
+              </div>
+
+              <p
+                id="projectModalDescription"
+                class="project-modal__description"
+              ></p>
+
+              <a
+                id="projectModalPdf"
+                class="project-modal__pdf-link"
+                href="#"
+                target="_blank"
+                rel="noopener"
+              >
+                Открыть PDF проекта
+              </a>
+            </div>
+
+            <aside class="project-modal__team">
+              <h3 class="project-modal__team-title">
+                Команды
+                <span
+                  id="projectModalTeamName"
+                  class="project-modal__team-name"
+                ></span>
+              </h3>
+              <ul
+                id="projectModalStudents"
+                class="project-modal__students-list"
+              ></ul>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="data-store.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>
