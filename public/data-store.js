@@ -1,5 +1,9 @@
 (() => {
   function getApiOrigin() {
+    if (window.location.protocol === "file:") {
+      return "http://127.0.0.1:8000";
+    }
+
     const currentProtocol =
       window.location.protocol === "https:" ? "https:" : "http:";
     const currentHost = window.location.hostname || "127.0.0.1";
@@ -8,7 +12,8 @@
   }
 
   const API_ORIGIN = getApiOrigin();
-  const API_BASE = `${API_ORIGIN}/api`;
+  const API_BASE =
+    window.location.protocol === "file:" ? `${API_ORIGIN}/api` : "/api";
   const PROJECT_FILES_BASE_URL = `${API_BASE}/projects`;
   const LOGIN_URL = "https://lms.sfedu.ru/auth/oidc/?source=loginpage";
 
