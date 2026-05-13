@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru" class="auth-html">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Главный админ</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body class="auth-page">
+    <main class="auth-main">
+      <section class="auth-panel auth-panel--wide" aria-labelledby="adminTitle">
+        <h1 class="auth-title" id="adminTitle">Администраторы</h1>
+        <p class="auth-text">
+          Добавьте почту пользователя, которому нужен доступ к админке.
+        </p>
+
+        <form class="auth-form" id="adminForm">
+          <label class="visually-hidden" for="adminEmail">Почта админа</label>
+          <input
+            class="admin-input"
+            id="adminEmail"
+            type="email"
+            placeholder="email@sfedu.ru"
+            autocomplete="email"
+            required
+          />
+          <button class="auth-button" id="adminSubmitButton" type="submit">
+            Добавить
+          </button>
+        </form>
+
+        <p class="auth-status" id="adminStatus" aria-live="polite"></p>
+        <ul class="auth-list" id="adminsList"></ul>
+
+        <div class="auth-actions">
+          <a class="auth-link-button" href="admin.html">К админке</a>
+          <a class="auth-link" href="login.html?next=superadmin.html">
+            Войти через Microsoft
+          </a>
+        </div>
+      </section>
+    </main>
+    <script src="data-store.js"></script>
+    <script src="superadmin.js"></script>
+  </body>
+</html>

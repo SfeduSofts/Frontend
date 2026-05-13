@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru" class="auth-html">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body class="auth-page">
+    <main class="auth-main">
+      <section class="auth-panel" aria-labelledby="loginTitle">
+        <h1 class="auth-title" id="loginTitle">Авторизация</h1>
+        <p class="auth-text">
+          Войдите через Microsoft. Доступ к админке появится, если ваша почта
+          добавлена главным админом.
+        </p>
+        <div class="auth-actions">
+          <a class="auth-button" id="loginButton" href="/auth/login">
+            Войти через Microsoft
+          </a>
+          <a class="auth-link" href="admin.html">К админке</a>
+        </div>
+      </section>
+    </main>
+    <script src="data-store.js"></script>
+    <script src="login.js"></script>
+  </body>
+</html>

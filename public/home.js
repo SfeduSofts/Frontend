@@ -1,3 +1,23 @@
+function getPendingAuthRedirect() {
+  const next = String(sessionStorage.getItem("sfedu_auth_next") || "").trim();
+  sessionStorage.removeItem("sfedu_auth_next");
+
+  if (!next || next.startsWith("http://") || next.startsWith("https://")) {
+    return "";
+  }
+
+  if (next.startsWith("//")) {
+    return "";
+  }
+
+  return next;
+}
+
+const pendingAuthRedirect = getPendingAuthRedirect();
+if (pendingAuthRedirect) {
+  window.location.replace(pendingAuthRedirect);
+}
+
 const authorsOverlay = document.getElementById("authorsOverlay");
 const authorsOpenButton = document.getElementById("authorsOpenButton");
 const authorsCloseButton = document.getElementById("authorsCloseButton");

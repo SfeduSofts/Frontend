@@ -14,11 +14,14 @@
   const API_ORIGIN = getApiOrigin();
   const API_BASE =
     window.location.protocol === "file:" ? `${API_ORIGIN}/api` : "/api";
+  const AUTH_BASE =
+    window.location.protocol === "file:" ? `${API_ORIGIN}/auth` : "/auth";
   const PROJECT_FILES_BASE_URL = `${API_BASE}/projects`;
-  const LOGIN_URL = "https://lms.sfedu.ru/auth/oidc/?source=loginpage";
+  const LOGIN_URL = `${AUTH_BASE}/login`;
 
-  async function requestJson(path, options = {}) {
+  async function requestJsonFromBase(baseUrl, path, options = {}) {
     const {
+      redirectOnUnauthorized = true,
       skipJsonContentType = false,
       headers: customHeaders = {},
       ...fetchOptions
@@ -28,32 +31,42 @@
       ...customHeaders,
     };
 
-    const response = await fetch(`${API_BASE}${path}`, {
+    const response = await fetch(`${baseUrl}${path}`, {
       credentials: "include",
       headers,
       ...fetchOptions,
     });
 
-    if (response.status === 401) {
-      let loginUrl = LOGIN_URL;
-      try {
-        const body = await response.json();
-        if (body && body.login_url) {
-          loginUrl = body.login_url;
-        }
-      } catch (error) {
-        // ignore JSON parse error
-      }
-
-      if (loginUrl) {
-        window.location.href = loginUrl;
-      }
-      throw new Error("Unauthorized");
-    }
-
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || "Request failed");
+      let text = "";
+      let body = null;
+
+      try {
+        text = await response.text();
+        body = text ? JSON.parse(text) : null;
+      } catch (error) {
+        body = null;
+      }
+
+      const detail = body?.detail || body?.message || text;
+      const message = Array.isArray(detail)
+        ? detail.map((item) => item?.msg || String(item)).join(", ")
+        : String(detail || "Request failed");
+      const requestError = new Error(message);
+      requestError.status = response.status;
+      requestError.detail = detail;
+      requestError.body = body;
+      requestError.loginUrl = body?.login_url || LOGIN_URL;
+
+      if (
+        response.status === 401 &&
+        redirectOnUnauthorized &&
+        requestError.loginUrl
+      ) {
+        window.location.href = requestError.loginUrl;
+      }
+
+      throw requestError;
     }
 
     if (response.status === 204) {
@@ -63,12 +76,22 @@
     return response.json();
   }
 
+  function requestJson(path, options = {}) {
+    return requestJsonFromBase(API_BASE, path, options);
+  }
+
+  function requestAuthJson(path, options = {}) {
+    return requestJsonFromBase(AUTH_BASE, path, options);
+  }
+
   const DataStore = {
     apiOrigin: API_ORIGIN,
     apiBase: API_BASE,
+    authBase: AUTH_BASE,
+    authLoginUrl: LOGIN_URL,
     projectFilesBaseUrl: PROJECT_FILES_BASE_URL,
-    loadProjects() {
-      return requestJson("/projects");
+    loadProjects(options = {}) {
+      return requestJson("/projects", options);
     },
     loadProjectDetails(projectId) {
       return requestJson(`/projects/${projectId}`);
@@ -179,6 +202,22 @@
       return requestJson(`/teams/${encodeURIComponent(teamName)}/students${query}`, {
         method: "PUT",
         body: JSON.stringify({ students }),
+      });
+    },
+    loadAdmins(options = {}) {
+      return requestAuthJson("/admins", options);
+    },
+    createAdmin(email, options = {}) {
+      return requestAuthJson("/admins", {
+        ...options,
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+    },
+    deleteAdmin(email, options = {}) {
+      return requestAuthJson(`/admins/${encodeURIComponent(email)}`, {
+        ...options,
+        method: "DELETE",
       });
     },
   };

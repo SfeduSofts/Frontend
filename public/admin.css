@@ -286,6 +286,50 @@
   margin-top: 0;
 }
 
+.admin-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.admin-access-notice {
+  width: min(440px, calc(100% - 48px));
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #213e89;
+}
+
+.admin-access-notice h1 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.08;
+}
+
+.admin-access-notice p {
+  margin: 0;
+  color: rgba(33, 62, 137, 0.76);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.admin-access-notice .admin-button {
+  width: fit-content;
+  text-decoration: none;
+}
+
+.admin-access-blocked .cards-section {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .admin-field-grid {
     grid-template-columns: 1fr;

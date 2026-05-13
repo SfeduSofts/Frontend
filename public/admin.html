@@ -112,10 +112,38 @@
               </button>
               <div id="adminImportSheetStatus" class="admin-import-status"></div>
             </div>
+            <div class="admin-nav-links">
+              <a
+                class="reset-filters-button admin-nav-link"
+                href="login.html?next=admin.html"
+              >
+                Войти
+              </a>
+              <a
+                class="reset-filters-button admin-nav-link"
+                href="superadmin.html"
+              >
+                Главный админ
+              </a>
+            </div>
           </div>
         </div>
       </aside>
       <main class="main">
+        <div
+          class="admin-access-notice admin-hidden"
+          id="adminAccessNotice"
+          aria-live="polite"
+        >
+          <h1>Недостаточно прав</h1>
+          <p>
+            Войдите через Microsoft. Доступ появится, если ваша почта добавлена
+            главным админом.
+          </p>
+          <a class="admin-button admin-button--save" href="login.html?next=admin.html">
+            Войти через Microsoft
+          </a>
+        </div>
         <section class="cards-section">
           <div class="cards-grid" id="cardsContainer"></div>
         </section>
@@ -291,8 +319,8 @@
         </div>
       </div>
     </div>
-    <script src="data-store.js?v=20260326-3"></script>
-    <script src="admin.js?v=20260326-3"></script>
+    <script src="data-store.js?v=20260507-1"></script>
+    <script src="admin.js?v=20260507-1"></script>
   </body>
 </html>
 

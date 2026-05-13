@@ -19,6 +19,7 @@ const adminImportSheetUrlInput = document.getElementById("adminImportSheetUrl");
 const adminImportSheetStatus = document.getElementById(
   "adminImportSheetStatus",
 );
+const adminAccessNotice = document.getElementById("adminAccessNotice");
 
 const modalBackdrop = document.getElementById("projectModal");
 const modalImage = document.getElementById("projectModalImage");
@@ -273,8 +274,31 @@ async function refreshProjectsList() {
   renderProjects();
 }
 
-function loadProjects() {
-  return DataStore.loadProjects();
+function loadProjects(options = {}) {
+  return DataStore.loadProjects(options);
+}
+
+function isAccessError(error) {
+  return error?.status === 401 || error?.status === 403;
+}
+
+function setAdminAccessBlocked(isBlocked) {
+  document.body.classList.toggle("admin-access-blocked", Boolean(isBlocked));
+
+  if (adminAccessNotice) {
+    adminAccessNotice.classList.toggle("admin-hidden", !isBlocked);
+  }
+
+  document
+    .querySelectorAll("button, input, select, textarea")
+    .forEach((control) => {
+      if (adminAccessNotice?.contains(control)) return;
+      control.disabled = Boolean(isBlocked);
+    });
+
+  if (isBlocked && cardsContainer) {
+    cardsContainer.innerHTML = "";
+  }
 }
 
 function loadTeamStudents(teamName, projectId = null) {
@@ -1532,9 +1556,10 @@ function init() {
     adminNameInput.addEventListener("input", updateImagePreview);
   }
 
-  loadProjects()
+  loadProjects({ redirectOnUnauthorized: false })
     .then((loadedProjects) => {
-      projects = loadedProjects;
+      setAdminAccessBlocked(false);
+      projects = Array.isArray(loadedProjects) ? loadedProjects : [];
       projectsLoaded = true;
       renderProjects();
       restorePendingProjectModalIfNeeded();
@@ -1543,6 +1568,13 @@ function init() {
       console.error("Ошибка загрузки списка проектов:", error);
       projects = [];
       projectsLoaded = true;
+
+      if (isAccessError(error)) {
+        setAdminAccessBlocked(true);
+        updateBulkSelectionUI();
+        return;
+      }
+
       const addCardHtml =
         '<button class="project-card admin-add-card" id="adminAddProjectButton" type="button" aria-label="Добавить проект">' +
         '<span class="admin-add-card__icon" aria-hidden="true">+</span>' +
