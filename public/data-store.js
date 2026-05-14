@@ -12,10 +12,8 @@
   }
 
   const API_ORIGIN = getApiOrigin();
-  const API_BASE =
-    window.location.protocol === "file:" ? `${API_ORIGIN}/api` : "/api";
-  const AUTH_BASE =
-    window.location.protocol === "file:" ? `${API_ORIGIN}/auth` : "/auth";
+  const API_BASE = `${API_ORIGIN}/api`;
+  const AUTH_BASE =`${API_ORIGIN}/auth`;
   const PROJECT_FILES_BASE_URL = `${API_BASE}/projects`;
   const LOGIN_URL = `${AUTH_BASE}/login`;
 
@@ -36,6 +34,9 @@
       headers,
       ...fetchOptions,
     });
+
+    console.log(`Request: ${fetchOptions.method || "GET"} ${baseUrl}${path}`);
+    console.log("Response status:", response.status);
 
     if (!response.ok) {
       let text = "";
